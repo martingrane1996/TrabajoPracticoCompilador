@@ -63,8 +63,9 @@
 programa:
 	bloque {printf("\n\t\tCompilacion exitosa\n");}
 bloque:
-	sentencia 				{printf("\n\t\tsentencia\n");}
-	|bloque sentencia 			{printf("\n\t\tmas de una sentencia\n");}
+	bloque sentencia 			{printf("\n\t\tmas de una sentencia\n");}
+	|sentencia 				{printf("\n\t\tsentencia\n");}
+	
 	;
 sentencia:
 	asignacion 				{printf("\n\t\t  asig. es sentencia \n");}
