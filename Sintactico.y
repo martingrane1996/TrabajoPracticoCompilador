@@ -64,13 +64,13 @@ programa:
 	bloque {printf("\n\t\tCompilacion exitosa\n");}
 bloque:
 	sentencia 				{printf("\n\t\tsentencia\n");}
-	|programa sentencia 			{printf("\n\t\tmas de una sentencia\n");}
+	|bloque sentencia 			{printf("\n\t\tmas de una sentencia\n");}
 	;
 sentencia:
-	asignacion 				{printf("\n\t\tsentencia es asig.\n");}
-	|declaracion 				{printf("\n\t\tsentencia es declaracion\n");}
-	|iteracion 				{printf("\n\t\tsentencia es iteracion\n");}
-	|seleccion 				{printf("\n\t\tsentencia es seleccion\n");}
+	asignacion 				{printf("\n\t\t  asig. es sentencia \n");}
+	|declaracion 				{printf("\n\t\t   declaracion es sentencia\n");}
+	|iteracion 				{printf("\n\t\t iteracion es sentencia\n");}
+	|seleccion 				{printf("\n\t\t seleccion  es sentencia\n");}
 	|PUT CTE_STR CIERRE_SENT		{printf("\n\t\timprimir cadenas es sentencia\n");}
 	|PUT CTE_INT CIERRE_SENT		{printf("\n\t\timprimir INT es sentencia.\n");}
 	|PUT CTE_REAL CIERRE_SENT		{printf("\n\t\timprimir REAL es sentencia.\n");}
