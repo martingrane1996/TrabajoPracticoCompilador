@@ -61,7 +61,7 @@
 
 %%
 programa:
-	bloque {printf("\n\t\tCompilación exitosa\n");}
+	bloque {printf("\n\t\tCompilacion exitosa\n");}
 bloque:
 	sentencia 				{printf("\n\t\tsentencia\n");}
 	|programa sentencia 			{printf("\n\t\tmas de una sentencia\n");}
