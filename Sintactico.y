@@ -95,12 +95,12 @@ lista_tipos:
 	|STRING 				{printf("\n\t\tlista_tipos es STRING\n");}	
 	;
 seleccion:
-	IF_C PAR_A condicion PAR_C LLAVE_A programa LLAVE_C ELSE LLAVE_A programa LLAVE_C 	{printf("\n\t\tIF CON ELSE\n");}
-	|IF_C  PAR_A condicion PAR_C LLAVE_A programa LLAVE_C 					{printf("\n\t\tIF SIN ELSE\n");}
+	IF_C PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C ELSE LLAVE_A bloque LLAVE_C 	{printf("\n\t\tIF CON ELSE\n");}
+	|IF_C  PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C 					{printf("\n\t\tIF SIN ELSE\n");}
 	|IF_C  PAR_A condicion PAR_C sentencia 							{printf("\n\t\tIF CON UNA SENTENCIA\n");}
 	;
 iteracion:
-	WHILE_C PAR_A condicion PAR_C LLAVE_A programa LLAVE_C 		{printf("\n\t\twhile(condicion){programa} es while\n");}
+	WHILE_C PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C 		{printf("\n\t\twhile(condicion){bloque} es while\n");}
 	;
 condicion:	
 	comparacion CMP_AND comparacion 		{printf("\n\t\tcomparacion AND comparacion  es condicion\n");}
