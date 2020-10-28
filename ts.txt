@@ -1,21 +1,6 @@
-Nombre						Tipo			Valor			Longitud
-contador
-promedio
-actual
-suma
-"Prueba.txt LyC Tema 1!"
-"Ingrese un valor entero para actual: "
-0
-02.5
-0xA2B0
-92
-1
-0.342
-256
-0b10
-52
-4
-"La suma es: "
-"actual es mayor que 2 y distinto de cero"
-0b111010
-"no es mayor que 2"
+Nombre                        	Tipo      	Valor     	Longitud  
+contador                      	id        
+promedio                      	id        
+actual                        	id        
+suma                          	id        
+"Prueba.txt LyC Tema 1!"      	string    

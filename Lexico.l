@@ -8,6 +8,8 @@
 	char *yyltext;
 	int TK_INVALID_STRING;
 	int validarTamano(char*, int);
+	FILE * tablaDeSimbolos;
+	int insertarEnTablaDeSimbolos(char* lexema, char* tipo);
 %}
 
 %option noyywrap
@@ -86,6 +88,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 						exit(1);
 					}
 					printf ("\nDetecto CTE_BIN ' %s ' en linea %d\n",yytext,yylineno); 
+					insertarEnTablaDeSimbolos(yytext, "bin");
 					return (CTE_BIN);
 				}  
 {CTE_HEX}		{
@@ -95,15 +98,21 @@ WHILE_C 	"while"|"WHILE"|"While"
 					}
 
 					printf ("\nDetecto CTE_HEX ' %s ' en linea %d\n",yytext,yylineno);
+					insertarEnTablaDeSimbolos(yytext, "hex");
 					return (CTE_HEX);
 				}  
 {CTE_INT}		{
-					if (atoi(yytext) > 65536) {
-						printf ("\nDetecto CTE_INT demasiado larga\n"); 
+					int valor = atoi(yytext);
+					if (valor > 65536) {
+						printf ("\nDetecto CTE_INT demasiado grande\n"); 
+						exit(1);
+					} else if (valor < -65536) {
+						printf ("\nDetecto CTE_INT demasiado chica\n"); 
 						exit(1);
 					}
 
 					printf ("\nDetecto CTE_INT ' %s ' en linea %d\n",yytext,yylineno);
+					insertarEnTablaDeSimbolos(yytext, "int");
 					return (CTE_INT);
 				} 		 	
 {CTE_REAL}		{
@@ -111,9 +120,13 @@ WHILE_C 	"while"|"WHILE"|"While"
 					if (result > 4294967296) {
 						printf ("\nDetecto CTE_REAL demasiado larga\n"); 
 						exit(1);
+					} else if (result < -4294967296) {
+						printf ("\nDetecto CTE_REAL demasiado chica\n"); 
+						exit(1);
 					}
 
 					printf ("\nDetecto CTE_REAL ' %s ' en linea %d\n",yytext,yylineno);
+					insertarEnTablaDeSimbolos(yytext, "real");
 					return (CTE_REAL);
 				}
 {CTE_STR}		{
@@ -123,6 +136,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 					}
 
 					printf ("\nDetecto CTE_STR ' %s ' en linea %d\n",yytext,yylineno);
+					insertarEnTablaDeSimbolos(yytext, "string");
 					return (CTE_STR); 	
 				}  
 {DIM}				{printf ("\nDetecto DIM ' %s ' en linea %d\n",yytext,yylineno); return (DIM);}
@@ -148,7 +162,11 @@ WHILE_C 	"while"|"WHILE"|"While"
 {STRING}			{printf ("\nDetecto STRING ' %s ' en linea %d\n",yytext,yylineno); return (STRING);}
 {VOID}				{printf ("\nDetecto VOID ' %s ' en linea %d\n",yytext,yylineno); return (VOID);}	 	
 {WHILE_C}			{printf ("\nDetecto WHILE_C ' %s ' en linea %d\n",yytext,yylineno); return (WHILE_C);}  
-{ID}				{printf ("\nDetecto ID ' %s ' en linea %d\n",yytext,yylineno); return (ID);}
+{ID}				{
+						printf ("\nDetecto ID ' %s ' en linea %d\n",yytext,yylineno); 
+						insertarEnTablaDeSimbolos(yytext, "id");
+						return (ID);
+					}
 
 "\n"
 "\t"
@@ -166,3 +184,7 @@ int validarTamano(char* texto, int tamano){
 	return 0;
 }
 
+int insertarEnTablaDeSimbolos(char* lexema, char* tipo) {
+   fprintf(tablaDeSimbolos, "%-30s\t%-15s\n", lexema, tipo);
+   return 0;
+}

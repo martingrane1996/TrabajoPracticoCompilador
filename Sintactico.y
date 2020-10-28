@@ -6,6 +6,7 @@
 	FILE *yyin;
 	int yylex();
 	int yyerror();
+	FILE * tablaDeSimbolos;
 %}
 
 %token AS 					  
@@ -128,13 +129,6 @@ expresion:
 	expresion OP_SUM termino 		{printf("\n\t\texpresion+termino es expresion\n");}
 	|expresion OP_DIF termino 		{printf("\n\t\texpresion-termino es expresion\n");}
 	|termino				{printf("\n\t\ttermino es expresion\n");}
-	|funcion				{printf("\n\t\tfuncion es expresion\n");}
-funcion:
-	VOID ID PAR_A parametros PAR_C 		{printf("\n\t\tfuncion retornar VOID\n");}
-	|STRING ID PAR_A parametros PAR_C	{printf("\n\t\tfuncion retornar STRING\n");}
-	|REAL ID PAR_A parametros PAR_C		{printf("\n\t\tfuncion retornar REAL\n");}
-	|INTEGER ID PAR_A parametros PAR_C 	{printf("\n\t\tfuncion retornar INTEGER\n");}
-	;
 parametros:
 	parametros COMA factor 			{printf("\n\t\tparametros,factor  son parametros\n");}
 	|factor					{printf("\n\t\tfactor es parametro\n");}
@@ -167,6 +161,15 @@ int main(int argc,char *argv[]){
 	if( yyin == NULL){
 		printf("\n\t\t No se puede abrir el archivo! ' %s '",argv[1]);
 	}else{
+		tablaDeSimbolos = fopen ("ts.txt", "w");
+		
+		if (tablaDeSimbolos == NULL) {
+			printf("\n\t\t No se crear la tabla de simbolos!");
+			exit(1);
+		}
+
+		fprintf(tablaDeSimbolos, "%-30s\t%-15s\t%-15s\t%-15s\n", "Nombre", "Tipo", "Valor", "Longitud");
+
 		yyparse();
 	}
 	fclose(yyin);

@@ -1,0 +1,6 @@
+.vscode
+lex.yy.c
+compilador
+y.output
+y.tab.c
+y.tab.h
