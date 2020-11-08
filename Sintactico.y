@@ -110,71 +110,71 @@ declaracion:
 	DIM CMP_ME lista_variables CMP_MA AS CMP_ME lista_tipos CMP_MA 		{printf("\n\t\tUNA DECLARACION\n");}
 	;
 lista_variables:
-	lista_variables COMA ID 		{printf("\n\t\tlista_variables,ID es lista_variables\n");}
-	|ID 					{printf("\n\t\tlista_variables es ID.\n");}
+	lista_variables COMA ID 		{insertarEnPolaca($1);insertarEnPolaca($2);printf("\n\t\tlista_variables,ID es lista_variables\n");}
+	|ID 							{insertarEnPolaca($1);printf("\n\t\tlista_variables es ID.\n");}
 	;
 lista_tipos:
-	lista_tipos COMA REAL 			{printf("\n\t\tlista_tipos,REAL es lista_tipos\n");}
-	|lista_tipos COMA INTEGER 		{printf("\n\t\tlista_tipos,INTEGER es lista_tipos\n");}
-	|lista_tipos COMA STRING 		{printf("\n\t\tlista_tipos,STRING es lista_tipos\n");}
-	|REAL 					{printf("\n\t\tlista_tipos es REAL\n");}
-	|INTEGER 				{printf("\n\t\tlista_tipos es INTEGER\n");}
-	|STRING 				{printf("\n\t\tlista_tipos es STRING\n");}	
+	lista_tipos COMA REAL 			{insertarEnPolaca($2);insertarEnPolaca($3);printf("\n\t\tlista_tipos,REAL es lista_tipos\n");}
+	|lista_tipos COMA INTEGER 		{insertarEnPolaca($2);insertarEnPolaca($3);printf("\n\t\tlista_tipos,INTEGER es lista_tipos\n");}
+	|lista_tipos COMA STRING 		{insertarEnPolaca($2);insertarEnPolaca($3);printf("\n\t\tlista_tipos,STRING es lista_tipos\n");}
+	|REAL 							{insertarEnPolaca($1);printf("\n\t\tlista_tipos es REAL\n");}
+	|INTEGER 						{insertarEnPolaca($1);printf("\n\t\tlista_tipos es INTEGER\n");}
+	|STRING 						{insertarEnPolaca($1);printf("\n\t\tlista_tipos es STRING\n");}	
 	;
 seleccion:
 	IF_C PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C ELSE LLAVE_A bloque LLAVE_C 	{printf("\n\t\tIF CON ELSE\n");}
-	|IF_C  PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C 					{printf("\n\t\tIF SIN ELSE\n");}
-	|IF_C  PAR_A condicion PAR_C sentencia 							{printf("\n\t\tIF CON UNA SENTENCIA\n");}
+	|IF_C  PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C 							{printf("\n\t\tIF SIN ELSE\n");}
+	|IF_C  PAR_A condicion PAR_C sentencia 											{printf("\n\t\tIF CON UNA SENTENCIA\n");}
 	;
 iteracion:
 	WHILE_C PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C 		{printf("\n\t\twhile(condicion){bloque} es while\n");}
 	;
 condicion:	
-	comparacion CMP_AND comparacion 		{printf("\n\t\tcomparacion AND comparacion  es condicion\n");}
-	|comparacion CMP_OR comparacion 		{printf("\n\t\tcomparacion OR comparacion  es condicion\n");}
-	|comparacion 					{printf("\n\t\tcomparacion es condicion\n");}
-	|CMP_NOT PAR_A comparacion PAR_C 		{printf("\n\t\tcomparacion negada es condicion\n");}
+	comparacion CMP_AND comparacion 		{insertarEnPolaca($2);printf("\n\t\tcomparacion AND comparacion  es condicion\n");}
+	|comparacion CMP_OR comparacion 		{insertarEnPolaca($2);printf("\n\t\tcomparacion OR comparacion  es condicion\n");}
+	|comparacion 							{printf("\n\t\tcomparacion es condicion\n");}
+	|CMP_NOT PAR_A comparacion PAR_C 		{insertarEnPolaca($1);printf("\n\t\tcomparacion negada es condicion\n");}
 	;
 comparacion:
 	expresion comparador expresion 			{printf("\n\t\texpresion comparado con expresion es comparacion\n");}
 	;
 comparador: 
-	CMP_MA_IGUAL 		{printf("\n\t\t>=  es un comparador\n");}
-	|CMP_ME_IGUAL  		{printf("\n\t\t<=  es un comparador\n");}
-	|CMP_ME			{printf("\n\t\t<  es un comparador\n");}
-	|CMP_MA			{printf("\n\t\t>  es un comparador\n");}
-	|CMP_IGUAL		{printf("\n\t\t==  es un comparador\n");}
-	|CMP_AND		{printf("\n\t\tAND  es un comparador\n");}
-	|CMP_OR			{printf("\n\t\tOR es un comparador\n");}
-	|CMP_DIST		{printf("\n\t\t!= es un comparador\n");}
+	CMP_MA_IGUAL 		{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\t>=  es un comparador\n");}
+	|CMP_ME_IGUAL  		{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\t<=  es un comparador\n");}
+	|CMP_ME				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\t<  es un comparador\n");}
+	|CMP_MA				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\t>  es un comparador\n");}
+	|CMP_IGUAL			{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\t==  es un comparador\n");}
+	|CMP_AND			{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tAND  es un comparador\n");}
+	|CMP_OR				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tOR es un comparador\n");}
+	|CMP_DIST			{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\t!= es un comparador\n");}
 	;
 asignacion:
 	ID OP_ASIG expresion CIERRE_SENT 	{printf("\n\t\tID := expresion; es una asignacion\n");}
 	;
 expresion: 
-	expresion OP_SUM termino 		{printf("\n\t\texpresion+termino es expresion\n");}
-	|expresion OP_DIF termino 		{printf("\n\t\texpresion-termino es expresion\n");}
-	|termino				{printf("\n\t\ttermino es expresion\n");}
+	expresion OP_SUM termino 		{insertarEnPolaca($2);printf("\n\t\texpresion+termino es expresion\n");}
+	|expresion OP_DIF termino 		{insertarEnPolaca($2);printf("\n\t\texpresion-termino es expresion\n");}
+	|termino						{printf("\n\t\ttermino es expresion\n");}
 termino:
-	termino OP_MUL factor  			{printf("\n\t\ttermino * factor es termino\n");}
-	|termino OP_DIV factor 			{printf("\n\t\ttermino / factor es termino\n");}
-	|factor					{printf("\n\t\tfactor es termino\n");}
+	termino OP_MUL factor  			{insertarEnPolaca($2);printf("\n\t\ttermino * factor es termino\n");}
+	|termino OP_DIV factor 			{insertarEnPolaca($2);printf("\n\t\ttermino / factor es termino\n");}
+	|factor							{printf("\n\t\tfactor es termino\n");}
 	;
 factor:
-	 ID 					{printf("\n\t\tID es es factor\n"); printf("Probando: %s",$1);}
-	|CTE_INT				{printf("\n\t\tCTE_INT ES factor\n"); printf("Probando: %s",$1);}
-	|CTE_REAL				{printf("\n\t\tCTE_REAL ES factor\n"); printf("Probando: %s",$1);}
-	|CTE_STR				{printf("\n\t\tCTE_STR ES factor\n"); printf("Probando: %s",$1);}
-	|CTE_BIN				{printf("\n\t\tCTE_BIN ES factor\n"); printf("Probando: %s",$1);}
-	|CTE_HEX				{printf("\n\t\tCTE_HEX ES factor\n"); printf("Probando: %s",$1);}
-	|PAR_A expresion PAR_C			{printf("\n\t\t (expresion) ES factor\n");}
-	|contar 				{printf("\n\t\tcontar es factor\n");}
+	 ID 					{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tID es es factor\n"); printf("Probando: %s",$1);}
+	|CTE_INT				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tCTE_INT ES factor\n"); printf("Probando: %s",$1);}
+	|CTE_REAL				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tCTE_REAL ES factor\n"); printf("Probando: %s",$1);}
+	|CTE_STR				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tCTE_STR ES factor\n"); printf("Probando: %s",$1);}
+	|CTE_BIN				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tCTE_BIN ES factor\n"); printf("Probando: %s",$1);}
+	|CTE_HEX				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tCTE_HEX ES factor\n"); printf("Probando: %s",$1);}
+	|PAR_A expresion PAR_C	{$$=$2;insertarEnPolaca($2);printf("\n\t\t (expresion) ES factor\n");}
+	|contar 				{$$=yyval;insertarEnPolaca($1);printf("\n\t\tcontar es factor\n");}
 	;
 contar:
-	CONTAR {contarAux = 0; insertarEnPolaca("contar");} PAR_A expresion CIERRE_SENT CORCH_A el CORCH_C PAR_C		{printf("\n\t\tfuncion contar\n");}
+	CONTAR {contarAux = 0;} PAR_A expresion {contarAux=$3;} CIERRE_SENT CORCH_A el {contarAux = aux_contador[contarAux];} CORCH_C PAR_C {printf("\n\t\tfuncion contar\n");insertarEnPolaca(contarAux);$$=contarAux}
 el:
-	el COMA factor
-	|factor
+	el COMA factor {aux_contador[$3]++;}
+	|factor {aux_contador[$1]++;}
 	;
 %%
 
@@ -240,5 +240,15 @@ void guardarPolaca() {
 	}
 	fprintf(intermedia, " %s", polaca[indiceActual]);
 }
+
+/*
+void insertar_en_polaca (char* valor){
+	FILE *fp;
+	fp = fopen ("intermedia.txt", "a");
+	if (fp==NULL) {printf ("File error",stderr); exit (1);}
+	fwrite(tabla1, 4, sizeof(, mihandle);
+	
+	fclose ( fp );
+}*/
 
 
