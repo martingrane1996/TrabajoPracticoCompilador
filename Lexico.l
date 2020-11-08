@@ -4,7 +4,6 @@
 	#include <string.h>
 	#include "y.tab.h"
 	FILE *yyin;
-	int yylval;
 	char *yyltext;
 	int TK_INVALID_STRING;
 	int validarTamano(char*, int);
@@ -89,6 +88,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 					}
 					printf ("\nDetecto CTE_BIN ' %s ' en linea %d\n",yytext,yylineno); 
 					insertarEnTablaDeSimbolos(yytext, "bin");
+					yylval.bin=strdup(yytext);
 					return (CTE_BIN);
 				}  
 {CTE_HEX}		{
@@ -99,6 +99,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 
 					printf ("\nDetecto CTE_HEX ' %s ' en linea %d\n",yytext,yylineno);
 					insertarEnTablaDeSimbolos(yytext, "hex");
+					yylval.hex=strdup(yytext);
 					return (CTE_HEX);
 				}  
 {CTE_INT}		{
@@ -113,6 +114,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 
 					printf ("\nDetecto CTE_INT ' %s ' en linea %d\n",yytext,yylineno);
 					insertarEnTablaDeSimbolos(yytext, "int");
+					yylval.num=strdup(yytext);
 					return (CTE_INT);
 				} 		 	
 {CTE_REAL}		{
@@ -127,6 +129,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 
 					printf ("\nDetecto CTE_REAL ' %s ' en linea %d\n",yytext,yylineno);
 					insertarEnTablaDeSimbolos(yytext, "real");
+					yylval.real=strdup(yytext);
 					return (CTE_REAL);
 				}
 {CTE_STR}		{
@@ -137,6 +140,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 
 					printf ("\nDetecto CTE_STR ' %s ' en linea %d\n",yytext,yylineno);
 					insertarEnTablaDeSimbolos(yytext, "string");
+					yylval.string=strdup(yytext);
 					return (CTE_STR); 	
 				}  
 {DIM}				{printf ("\nDetecto DIM ' %s ' en linea %d\n",yytext,yylineno); return (DIM);}
@@ -165,6 +169,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 {ID}				{
 						printf ("\nDetecto ID ' %s ' en linea %d\n",yytext,yylineno); 
 						insertarEnTablaDeSimbolos(yytext, "id");
+						yylval.id=strdup(yytext);
 					
 						return (ID);
 					}

@@ -26,6 +26,15 @@
 	int contarAux;
 %}
 
+%union {
+char* id;
+char* num;
+char* hex;
+char* bin;
+char* real; 
+char* string;
+}
+
 %token AS 					  
 %token CIERRE_SENT
 %token CMP_AND				  
@@ -42,19 +51,13 @@
 %token CONST 				  
 %token CONTAR				  
 %token CORCH_A
-%token CORCH_C				  
-%token CTE_BIN
-%token CTE_HEX
-%token CTE_INT			    			
-%token CTE_REAL				 
-%token CTE_STR					 
+%token CORCH_C				     			
 %token DIGITO
 %token DIM					  
 %token ELSE					   
 %token END_IF				 
 %token FOREACH_C
-%token GET 					  
-%token ID					  
+%token GET 					  				  
 %token IF_C					  	
 %token INTEGER				  
 %token LETRA
@@ -76,6 +79,13 @@
 %token VAR_STRING
 %token VOID					  		
 %token WHILE_C				   
+
+%token <id> ID
+%token <num> CTE_INT
+%token <real> CTE_REAL
+%token <string> CTE_STR
+%token <hex> CTE_BIN
+%token <bin> CTE_HEX 
 
 %%
 programa:
@@ -151,12 +161,12 @@ termino:
 	|factor					{printf("\n\t\tfactor es termino\n");}
 	;
 factor:
-	 ID 					{printf("\n\t\tID es es factor\n");}
-	|CTE_INT				{printf("\n\t\tCTE_INT ES factor\n");}
-	|CTE_REAL				{printf("\n\t\tCTE_REAL ES factor\n");}
-	|CTE_STR				{printf("\n\t\tCTE_STR ES factor\n");}
-	|CTE_BIN				{printf("\n\t\tCTE_BIN ES factor\n");}
-	|CTE_HEX				{printf("\n\t\tCTE_HEX ES factor\n");}
+	 ID 					{printf("\n\t\tID es es factor\n"); printf("Probando: %s",$1);}
+	|CTE_INT				{printf("\n\t\tCTE_INT ES factor\n"); printf("Probando: %s",$1);}
+	|CTE_REAL				{printf("\n\t\tCTE_REAL ES factor\n"); printf("Probando: %s",$1);}
+	|CTE_STR				{printf("\n\t\tCTE_STR ES factor\n"); printf("Probando: %s",$1);}
+	|CTE_BIN				{printf("\n\t\tCTE_BIN ES factor\n"); printf("Probando: %s",$1);}
+	|CTE_HEX				{printf("\n\t\tCTE_HEX ES factor\n"); printf("Probando: %s",$1);}
 	|PAR_A expresion PAR_C			{printf("\n\t\t (expresion) ES factor\n");}
 	|contar 				{printf("\n\t\tcontar es factor\n");}
 	;
