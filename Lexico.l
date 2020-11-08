@@ -165,6 +165,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 {ID}				{
 						printf ("\nDetecto ID ' %s ' en linea %d\n",yytext,yylineno); 
 						insertarEnTablaDeSimbolos(yytext, "id");
+					
 						return (ID);
 					}
 

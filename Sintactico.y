@@ -7,6 +7,23 @@
 	int yylex();
 	int yyerror();
 	FILE * tablaDeSimbolos;
+	FILE * intermedia;
+
+	int pilaIf[50];
+	int *punteroPilaIf;
+
+	#define apilar(puntero, valor) (*((puntero)++) = (valor))
+	#define desapilar(puntero) (*--(puntero))
+
+	char** polaca;
+	int tamanioDePocala;
+	int indiceActual;
+
+	void avanzar();
+	void insertarEnPolaca(char* valor);
+	void insertarEnPolacaConPosicion(char* valor, int pos);
+	void guardarPolaca();
+	int contarAux;
 %}
 
 %token AS 					  
@@ -62,7 +79,7 @@
 
 %%
 programa:
-	bloque {printf("\n\t\tCompilacion exitosa\n");}
+	bloque {guardarPolaca(); printf("\n\t\tCompilacion exitosa\n");}
 bloque:
 	bloque sentencia 			{printf("\n\t\tmas de una sentencia\n");}
 	|sentencia 				{printf("\n\t\tsentencia\n");}
@@ -78,7 +95,6 @@ sentencia:
 	|PUT CTE_REAL CIERRE_SENT		{printf("\n\t\timprimir REAL es sentencia.\n");}
 	|PUT ID CIERRE_SENT			{printf("\n\t\timprimir ID es sentencia.\n");}
 	|GET ID CIERRE_SENT			{printf("\n\t\tGET ID es sentencia.\n");}
-	|contar CIERRE_SENT			{printf("\n\t\tCONTAR es sentencia.\n");}
 	;
 declaracion: 
 	DIM CMP_ME lista_variables CMP_MA AS CMP_ME lista_tipos CMP_MA 		{printf("\n\t\tUNA DECLARACION\n");}
@@ -129,10 +145,6 @@ expresion:
 	expresion OP_SUM termino 		{printf("\n\t\texpresion+termino es expresion\n");}
 	|expresion OP_DIF termino 		{printf("\n\t\texpresion-termino es expresion\n");}
 	|termino				{printf("\n\t\ttermino es expresion\n");}
-parametros:
-	parametros COMA factor 			{printf("\n\t\tparametros,factor  son parametros\n");}
-	|factor					{printf("\n\t\tfactor es parametro\n");}
-	;
 termino:
 	termino OP_MUL factor  			{printf("\n\t\ttermino * factor es termino\n");}
 	|termino OP_DIV factor 			{printf("\n\t\ttermino / factor es termino\n");}
@@ -149,7 +161,7 @@ factor:
 	|contar 				{printf("\n\t\tcontar es factor\n");}
 	;
 contar:
-	CONTAR PAR_A expresion CIERRE_SENT CORCH_A el CORCH_C PAR_C		{printf("\n\t\tfuncion contar\n");}
+	CONTAR {contarAux = 0; insertarEnPolaca("contar");} PAR_A expresion CIERRE_SENT CORCH_A el CORCH_C PAR_C		{printf("\n\t\tfuncion contar\n");}
 el:
 	el COMA factor
 	|factor
@@ -162,6 +174,8 @@ int main(int argc,char *argv[]){
 		printf("\n\t\t No se puede abrir el archivo! ' %s '",argv[1]);
 	}else{
 		tablaDeSimbolos = fopen ("ts.txt", "w");
+		intermedia = fopen ("intermedia.txt", "w");
+		indiceActual = 0;
 		
 		if (tablaDeSimbolos == NULL) {
 			printf("\n\t\t No se crear la tabla de simbolos!");
@@ -170,7 +184,14 @@ int main(int argc,char *argv[]){
 
 		fprintf(tablaDeSimbolos, "%-30s\t%-15s\t%-15s\t%-15s\n", "Nombre", "Tipo", "Valor", "Longitud");
 
+		// inicializo las pilas
+		punteroPilaIf = pilaIf;
+		tamanioDePocala = 1000;
+		polaca = malloc(tamanioDePocala * sizeof(*polaca));
+
 		yyparse();
+		fclose(tablaDeSimbolos);
+		fclose(intermedia);
 	}
 	fclose(yyin);
 	return 0;
@@ -181,4 +202,33 @@ int yyerror(void){
 	exit(1);
 	return 0;
 }
+
+void avanzar() {
+    indiceActual++;
+}
+
+void insertarEnPolaca(char* valor) {
+	insertarEnPolacaConPosicion(valor, indiceActual);
+    indiceActual++;
+}
+
+void insertarEnPolacaConPosicion(char* valor, int pos) {
+	if (pos >= tamanioDePocala) {
+		polaca = realloc(polaca, (2 * tamanioDePocala) * sizeof(*polaca));
+	}
+
+	polaca[pos] = valor;
+}
+
+void guardarPolaca() {
+	int i = 1;
+	fprintf(intermedia, "%s ;", polaca[0]);
+	int anteUltimo = indiceActual - 1;
+	while (i < anteUltimo) {
+		fprintf(intermedia, " %s ;", polaca[i]);
+		i++;
+	}
+	fprintf(intermedia, " %s", polaca[indiceActual]);
+}
+
 
