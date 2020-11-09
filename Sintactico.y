@@ -15,18 +15,22 @@
 	int pilaWhile[50];
 	int *punteroPilaWhile;
 
+	int pilaContar[50];
+	int *punteroPilaContar;
+
 	#define apilar(puntero, valor) (*((puntero)++) = (valor))
 	#define desapilar(puntero) (*--(puntero))
 
-	char** polaca;
+	char** polacaVec;
 	int tamanioDePocala;
 	int indiceActual;
 
 	void avanzar();
-	void insertarEnPolaca(char* valor);
-	void insertarEnPolacaConPosicion(char* valor, int pos);
+	void polaca(char* valor);
+	void polacaConPos(char* valor, int pos);
 	void guardarPolaca();
 	int contarAux;
+	int aux_contador[];
 %}
 
 %union {
@@ -116,77 +120,97 @@ declaracion:
 	DIM CMP_ME lista_variables CMP_MA AS CMP_ME lista_tipos CMP_MA 		{printf("\n\t\tUNA DECLARACION\n");}
 	;
 lista_variables:
-	lista_variables COMA ID 		{insertarEnPolaca($1);insertarEnPolaca($2);printf("\n\t\tlista_variables,ID es lista_variables\n");}
-	|ID 							{insertarEnPolaca($1);printf("\n\t\tlista_variables es ID.\n");}
+	lista_variables COMA ID 		{polaca(",");polaca($3);printf("\n\t\tlista_variables,ID es lista_variables\n");}
+	|ID 							{polaca($1);printf("\n\t\tlista_variables es ID.\n");}
 	;
 lista_tipos:
-	lista_tipos COMA REAL 			{insertarEnPolaca($2);insertarEnPolaca($3);printf("\n\t\tlista_tipos,REAL es lista_tipos\n");}
-	|lista_tipos COMA INTEGER 		{insertarEnPolaca($2);insertarEnPolaca($3);printf("\n\t\tlista_tipos,INTEGER es lista_tipos\n");}
-	|lista_tipos COMA STRING 		{insertarEnPolaca($2);insertarEnPolaca($3);printf("\n\t\tlista_tipos,STRING es lista_tipos\n");}
-	|REAL 							{insertarEnPolaca($1);printf("\n\t\tlista_tipos es REAL\n");}
-	|INTEGER 						{insertarEnPolaca($1);printf("\n\t\tlista_tipos es INTEGER\n");}
-	|STRING 						{insertarEnPolaca($1);printf("\n\t\tlista_tipos es STRING\n");}	
+	lista_tipos COMA REAL 			{polaca(",");polaca("REAL");printf("\n\t\tlista_tipos,REAL es lista_tipos\n");}
+	|lista_tipos COMA INTEGER 		{polaca(",");polaca("INTEGER");printf("\n\t\tlista_tipos,INTEGER es lista_tipos\n");}
+	|lista_tipos COMA STRING 		{polaca(",");polaca("STRING");printf("\n\t\tlista_tipos,STRING es lista_tipos\n");}
+	|REAL 							{polaca("REAL");printf("\n\t\tlista_tipos es REAL\n");}
+	|INTEGER 						{polaca("INTEGER");printf("\n\t\tlista_tipos es INTEGER\n");}
+	|STRING 						{polaca("STRING");printf("\n\t\tlista_tipos es STRING\n");}	
 	;
 seleccion:
 	IF_C PAR_A condicion PAR_C LLAVE_A 
-	{apilar(punteroPilaIf, indiceActual); avanzar();} 
 	bloque 
-	LLAVE_C {insertarEnPolacaConPosicion(indiceActual + 1, desapilar(punteroPilaIf)); apilar(punteroPilaIf, indiceActual); avanzar();} 
-	ELSE LLAVE_A bloque LLAVE_C 	{printf("\n\t\tIF CON ELSE\n"); insertarEnPolacaConPosicion(indiceActual + 1, desapilar(punteroPilaIf));}
+	LLAVE_C {polacaConPos(indiceActual + 1, desapilar(punteroPilaIf)); polaca("BI"); apilar(punteroPilaIf, indiceActual); avanzar();} 
+	ELSE LLAVE_A bloque LLAVE_C 	{printf("\n\t\tIF CON ELSE\n"); polacaConPos(indiceActual + 1, desapilar(punteroPilaIf));}
 
 
 	|IF_C  PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C 							{printf("\n\t\tIF SIN ELSE\n");}
 	|IF_C  PAR_A condicion PAR_C sentencia 											{printf("\n\t\tIF CON UNA SENTENCIA\n");}
 	;
 iteracion:
-	WHILE_C {apilar(punteroPilaWhile, indiceActual); insertarEnPolaca("ET");} PAR_A condicion {apilar(punteroPilaWhile, indiceActual); avanzar();} PAR_C LLAVE_A 
-	bloque {insertarEnPolaca("BI"); insertarEnPolacaConPosicion(indiceActual + 1, desapilar(punteroPilaWhile)); insertarEnPolaca(desapilar(punteroPilaWhile));} 
+	WHILE_C {apilar(punteroPilaWhile, indiceActual); polaca("ET");} PAR_A condicion {apilar(punteroPilaWhile, indiceActual); avanzar();} PAR_C LLAVE_A 
+	bloque {polaca("BI"); polacaConPos(indiceActual + 1, desapilar(punteroPilaWhile)); polaca(desapilar(punteroPilaWhile));} 
 	LLAVE_C 		{printf("\n\t\twhile(condicion){bloque} es while\n");}
 	;
 condicion:	
-	comparacion CMP_AND comparacion 		{insertarEnPolaca($2);printf("\n\t\tcomparacion AND comparacion  es condicion\n");}
-	|comparacion CMP_OR comparacion 		{insertarEnPolaca($2);printf("\n\t\tcomparacion OR comparacion  es condicion\n");}
+	comparacion CMP_AND comparacion 		{printf("\n\t\tcomparacion AND comparacion  es condicion\n");}
+	|comparacion CMP_OR {polacaConPos(indiceActual + 1, desapilar(punteroPilaIf)); apilar(punteroPilaIf, indiceActual); avanzar();} comparacion 		{printf("\n\t\tcomparacion OR comparacion  es condicion\n");}
 	|comparacion 							{printf("\n\t\tcomparacion es condicion\n");}
-	|CMP_NOT PAR_A comparacion PAR_C 		{insertarEnPolaca($1);printf("\n\t\tcomparacion negada es condicion\n");}
+	|CMP_NOT PAR_A comparacion PAR_C 		{printf("\n\t\tcomparacion negada es condicion\n");}
 	;
 comparacion:
-	expresion comparador expresion 			{insertarEnPolaca($1);insertarEnPolaca($3);printf("\n\t\texpresion comparado con expresion es comparacion\n");}
+	expresion comparador expresion 			{printf("\n\t\texpresion comparado con expresion es comparacion\n");}
 	;
 comparador: 
-	CMP_MA_IGUAL 		{insertarEnPolaca("CMP");insertarEnPolaca("BLT");printf("\n\t\t>=  es un comparador\n");}
-	|CMP_ME_IGUAL  		{insertarEnPolaca("CMP");insertarEnPolaca("BGT");printf("\n\t\t<=  es un comparador\n");}
-	|CMP_ME				{insertarEnPolaca("CMP");insertarEnPolaca("BGE");printf("\n\t\t<  es un comparador\n");}
-	|CMP_MA				{insertarEnPolaca("CMP");insertarEnPolaca("BLE");printf("\n\t\t>  es un comparador\n");}
-	|CMP_IGUAL			{insertarEnPolaca("CMP");insertarEnPolaca("BNE");printf("\n\t\t==  es un comparador\n");}
-	|CMP_DIST			{insertarEnPolaca("CMP");insertarEnPolaca("BEQ");printf("\n\t\t<> es un comparador\n");}
+	CMP_MA_IGUAL 		{polaca("CMP");polaca("BLT"); apilar(punteroPilaIf, indiceActual); avanzar();printf("\n\t\t>=  es un comparador\n");}
+	|CMP_ME_IGUAL  		{polaca("CMP");polaca("BGT"); apilar(punteroPilaIf, indiceActual); avanzar();printf("\n\t\t<=  es un comparador\n");}
+	|CMP_ME				{polaca("CMP");polaca("BGE"); apilar(punteroPilaIf, indiceActual); avanzar();printf("\n\t\t<  es un comparador\n");}
+	|CMP_MA				{polaca("CMP");polaca("BLE"); apilar(punteroPilaIf, indiceActual); avanzar();printf("\n\t\t>  es un comparador\n");}
+	|CMP_IGUAL			{polaca("CMP");polaca("BNE"); apilar(punteroPilaIf, indiceActual); avanzar();printf("\n\t\t==  es un comparador\n");}
+	|CMP_DIST			{polaca("CMP");polaca("BEQ"); apilar(punteroPilaIf, indiceActual); avanzar();printf("\n\t\t<> es un comparador\n");}
 	;
 asignacion:
-	ID OP_ASIG expresion CIERRE_SENT 	{printf("\n\t\tID := expresion; es una asignacion\n");}
+	ID {polaca($1);} OP_ASIG expresion CIERRE_SENT 	{polaca("="); printf("\n\t\tID := expresion; es una asignacion\n");}
 	;
 expresion: 
-	expresion OP_SUM termino 		{insertarEnPolacainsertarEnPolaca("+");printf("\n\t\texpresion+termino es expresion\n");}
-	|expresion OP_DIF termino 		{insertarEnPolaca("-");printf("\n\t\texpresion-termino es expresion\n");}
+	expresion OP_SUM termino 		{polaca("+");printf("\n\t\texpresion+termino es expresion\n");}
+	|expresion OP_DIF termino 		{polaca("-");printf("\n\t\texpresion-termino es expresion\n");}
 	|termino						{printf("\n\t\ttermino es expresion\n");}
 termino:
-	termino OP_MUL factor  			{insertarEnPolaca("*");printf("\n\t\ttermino * factor es termino\n");}
-	|termino OP_DIV factor 			{insertarEnPolaca("/");printf("\n\t\ttermino / factor es termino\n");}
+	termino OP_MUL factor  			{polaca("*");printf("\n\t\ttermino * factor es termino\n");}
+	|termino OP_DIV factor 			{polaca("/");printf("\n\t\ttermino / factor es termino\n");}
 	|factor							{printf("\n\t\tfactor es termino\n");}
 	;
 factor:
-	 ID 					{$$=$1;insertarEnPolaca($1);printf("\n\t\tID es es factor\n");}
-	|CTE_INT				{$$=$1;insertarEnPolaca($1);printf("\n\t\tCTE_INT ES factor\n");}
-	|CTE_REAL				{$$=$1;insertarEnPolaca($1);printf("\n\t\tCTE_REAL ES factor\n");}
-	|CTE_STR				{$$=$1;insertarEnPolaca($1);printf("\n\t\tCTE_STR ES factor\n");}
-	|CTE_BIN				{$$=$1;insertarEnPolaca($1);printf("\n\t\tCTE_BIN ES factor\n");}
-	|CTE_HEX				{$$=$1;insertarEnPolaca($1);printf("\n\t\tCTE_HEX ES factor\n");}
-	|PAR_A expresion PAR_C	{$$=$2;insertarEnPolaca($2);printf("\n\t\t (expresion) ES factor\n");}
-	|contar 				{insertarEnPolaca($1);printf("\n\t\tcontar es factor\n");}
+	 ID 					{$$=$1;polaca($1);printf("\n\t\tID es es factor\n");}
+	|CTE_INT				{$$=$1;polaca($1);printf("\n\t\tCTE_INT ES factor\n");}
+	|CTE_REAL				{$$=$1;polaca($1);printf("\n\t\tCTE_REAL ES factor\n");}
+	|CTE_STR				{$$=$1;polaca($1);printf("\n\t\tCTE_STR ES factor\n");}
+	|CTE_BIN				{$$=$1;polaca($1);printf("\n\t\tCTE_BIN ES factor\n");}
+	|CTE_HEX				{$$=$1;polaca($1);printf("\n\t\tCTE_HEX ES factor\n");}
+	|PAR_A expresion PAR_C	{$$=$2;polaca($2);printf("\n\t\t (expresion) ES factor\n");}
+	|contar 				{printf("\n\t\tcontar es factor\n");}
 	;
 contar:
-	CONTAR {contarAux = 0;} PAR_A expresion {contarAux=$3;} CIERRE_SENT CORCH_A el {contarAux = aux_contador[contarAux];} CORCH_C PAR_C {printf("\n\t\tfuncion contar\n");insertarEnPolaca(contarAux);$$=contarAux}
+	CONTAR {polaca("@contador");polaca("0");polaca("=");polaca("@aux");} PAR_A expresion {polaca("=");} CIERRE_SENT CORCH_A el
+	 CORCH_C PAR_C {printf("\n\t\tfuncion contar\n");}
 el:
-	el COMA factor {aux_contador[$3]++;}
-	|factor {aux_contador[$1]++;}
+	el COMA factor {
+		polaca("@aux");
+		polaca($3);
+		polaca("CMP");
+		polaca("BNE");
+		apilar(punteroPilaContar, indiceActual); avanzar(); 
+		polaca("@contador"); 
+		polaca("1"); 
+		polaca("+");
+		polacaConPos(indiceActual, desapilar(punteroPilaContar));
+	} 
+	|factor { 
+		polaca("@aux");
+		polaca($1);
+		polaca("CMP");
+		polaca("BNE");
+		apilar(punteroPilaContar, indiceActual); avanzar(); 
+		polaca("@contador"); 
+		polaca("1"); 
+		polaca("+");
+		polacaConPos(indiceActual, desapilar(punteroPilaContar));
+		} 
 	;
 %%
 
@@ -209,8 +233,9 @@ int main(int argc,char *argv[]){
 		// inicializo las pilas
 		punteroPilaIf = pilaIf;
 		punteroPilaWhile = pilaWhile;
+		punteroPilaContar = pilaContar;
 		tamanioDePocala = 1000;
-		polaca = malloc(tamanioDePocala * sizeof(*polaca));
+		polacaVec = malloc(tamanioDePocala * sizeof(*polacaVec));
 
 		yyparse();
 		fclose(tablaDeSimbolos);
@@ -230,28 +255,25 @@ void avanzar() {
     indiceActual++;
 }
 
-void insertarEnPolaca(char* valor) {
-	insertarEnPolacaConPosicion(valor, indiceActual);
+void polaca(char* valor) {
+	polacaConPos(valor, indiceActual);
     indiceActual++;
 }
 
-void insertarEnPolacaConPosicion(char* valor, int pos) {
+void polacaConPos(char* valor, int pos) {
 	if (pos >= tamanioDePocala) {
-		polaca = realloc(polaca, (2 * tamanioDePocala) * sizeof(*polaca));
+		polacaVec = realloc(polacaVec, (2 * tamanioDePocala) * sizeof(*polacaVec));
 	}
 
-	polaca[pos] = valor;
+	polacaVec[pos] = valor;
 }
 
 void guardarPolaca() {
-	int i = 1;
-	fprintf(intermedia, "%s ;", polaca[0]);
-	int anteUltimo = indiceActual - 1;
-	while (i < anteUltimo) {
-		fprintf(intermedia, " %s ;", polaca[i]);
+	int i = 0;
+	while (i < indiceActual) {
+		fprintf(intermedia, "%s ; ", polacaVec[i]);
 		i++;
 	}
-	fprintf(intermedia, " %s", polaca[indiceActual]);
 }
 
 /*

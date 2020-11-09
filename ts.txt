@@ -1,6 +1,5 @@
-Nombre                        	Tipo      	Valor     	Longitud  
-contador                      	id        
-promedio                      	id        
-actual                        	id        
-suma                          	id        
-"Prueba.txt LyC Tema 1!"      	string    
+Nombre                        	Tipo           	Valor          	Longitud       
+a                             	id             
+5                             	int            
+a                             	id             
+5                             	int            

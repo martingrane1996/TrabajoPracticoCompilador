@@ -1,1 +1,1 @@
-contar ; (null)
+a ; CMP ; BLE ; (null) ; 5 ; a ; 5 ; = ; 
