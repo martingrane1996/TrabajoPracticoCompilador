@@ -12,6 +12,9 @@
 	int pilaIf[50];
 	int *punteroPilaIf;
 
+	int pilaWhile[50];
+	int *punteroPilaWhile;
+
 	#define apilar(puntero, valor) (*((puntero)++) = (valor))
 	#define desapilar(puntero) (*--(puntero))
 
@@ -86,6 +89,9 @@ char* string;
 %token <string> CTE_STR
 %token <hex> CTE_BIN
 %token <bin> CTE_HEX 
+%type <string> expresion
+%type <string> termino
+%type <string> factor
 
 %%
 programa:
@@ -122,12 +128,20 @@ lista_tipos:
 	|STRING 						{insertarEnPolaca($1);printf("\n\t\tlista_tipos es STRING\n");}	
 	;
 seleccion:
-	IF_C PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C ELSE LLAVE_A bloque LLAVE_C 	{printf("\n\t\tIF CON ELSE\n");}
+	IF_C PAR_A condicion PAR_C LLAVE_A 
+	{apilar(punteroPilaIf, indiceActual); avanzar();} 
+	bloque 
+	LLAVE_C {insertarEnPolacaConPosicion(indiceActual + 1, desapilar(punteroPilaIf)); apilar(punteroPilaIf, indiceActual); avanzar();} 
+	ELSE LLAVE_A bloque LLAVE_C 	{printf("\n\t\tIF CON ELSE\n"); insertarEnPolacaConPosicion(indiceActual + 1, desapilar(punteroPilaIf));}
+
+
 	|IF_C  PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C 							{printf("\n\t\tIF SIN ELSE\n");}
 	|IF_C  PAR_A condicion PAR_C sentencia 											{printf("\n\t\tIF CON UNA SENTENCIA\n");}
 	;
 iteracion:
-	WHILE_C PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C 		{printf("\n\t\twhile(condicion){bloque} es while\n");}
+	WHILE_C {apilar(punteroPilaWhile, indiceActual); insertarEnPolaca("ET");} PAR_A condicion {apilar(punteroPilaWhile, indiceActual); avanzar();} PAR_C LLAVE_A 
+	bloque {insertarEnPolaca("BI"); insertarEnPolacaConPosicion(indiceActual + 1, desapilar(punteroPilaWhile)); insertarEnPolaca(desapilar(punteroPilaWhile));} 
+	LLAVE_C 		{printf("\n\t\twhile(condicion){bloque} es while\n");}
 	;
 condicion:	
 	comparacion CMP_AND comparacion 		{insertarEnPolaca($2);printf("\n\t\tcomparacion AND comparacion  es condicion\n");}
@@ -136,39 +150,37 @@ condicion:
 	|CMP_NOT PAR_A comparacion PAR_C 		{insertarEnPolaca($1);printf("\n\t\tcomparacion negada es condicion\n");}
 	;
 comparacion:
-	expresion comparador expresion 			{printf("\n\t\texpresion comparado con expresion es comparacion\n");}
+	expresion comparador expresion 			{insertarEnPolaca($1);insertarEnPolaca($3);printf("\n\t\texpresion comparado con expresion es comparacion\n");}
 	;
 comparador: 
-	CMP_MA_IGUAL 		{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\t>=  es un comparador\n");}
-	|CMP_ME_IGUAL  		{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\t<=  es un comparador\n");}
-	|CMP_ME				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\t<  es un comparador\n");}
-	|CMP_MA				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\t>  es un comparador\n");}
-	|CMP_IGUAL			{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\t==  es un comparador\n");}
-	|CMP_AND			{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tAND  es un comparador\n");}
-	|CMP_OR				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tOR es un comparador\n");}
-	|CMP_DIST			{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\t!= es un comparador\n");}
+	CMP_MA_IGUAL 		{insertarEnPolaca("CMP");insertarEnPolaca("BLT");printf("\n\t\t>=  es un comparador\n");}
+	|CMP_ME_IGUAL  		{insertarEnPolaca("CMP");insertarEnPolaca("BGT");printf("\n\t\t<=  es un comparador\n");}
+	|CMP_ME				{insertarEnPolaca("CMP");insertarEnPolaca("BGE");printf("\n\t\t<  es un comparador\n");}
+	|CMP_MA				{insertarEnPolaca("CMP");insertarEnPolaca("BLE");printf("\n\t\t>  es un comparador\n");}
+	|CMP_IGUAL			{insertarEnPolaca("CMP");insertarEnPolaca("BNE");printf("\n\t\t==  es un comparador\n");}
+	|CMP_DIST			{insertarEnPolaca("CMP");insertarEnPolaca("BEQ");printf("\n\t\t<> es un comparador\n");}
 	;
 asignacion:
 	ID OP_ASIG expresion CIERRE_SENT 	{printf("\n\t\tID := expresion; es una asignacion\n");}
 	;
 expresion: 
-	expresion OP_SUM termino 		{insertarEnPolaca($2);printf("\n\t\texpresion+termino es expresion\n");}
-	|expresion OP_DIF termino 		{insertarEnPolaca($2);printf("\n\t\texpresion-termino es expresion\n");}
+	expresion OP_SUM termino 		{insertarEnPolacainsertarEnPolaca("+");printf("\n\t\texpresion+termino es expresion\n");}
+	|expresion OP_DIF termino 		{insertarEnPolaca("-");printf("\n\t\texpresion-termino es expresion\n");}
 	|termino						{printf("\n\t\ttermino es expresion\n");}
 termino:
-	termino OP_MUL factor  			{insertarEnPolaca($2);printf("\n\t\ttermino * factor es termino\n");}
-	|termino OP_DIV factor 			{insertarEnPolaca($2);printf("\n\t\ttermino / factor es termino\n");}
+	termino OP_MUL factor  			{insertarEnPolaca("*");printf("\n\t\ttermino * factor es termino\n");}
+	|termino OP_DIV factor 			{insertarEnPolaca("/");printf("\n\t\ttermino / factor es termino\n");}
 	|factor							{printf("\n\t\tfactor es termino\n");}
 	;
 factor:
-	 ID 					{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tID es es factor\n"); printf("Probando: %s",$1);}
-	|CTE_INT				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tCTE_INT ES factor\n"); printf("Probando: %s",$1);}
-	|CTE_REAL				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tCTE_REAL ES factor\n"); printf("Probando: %s",$1);}
-	|CTE_STR				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tCTE_STR ES factor\n"); printf("Probando: %s",$1);}
-	|CTE_BIN				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tCTE_BIN ES factor\n"); printf("Probando: %s",$1);}
-	|CTE_HEX				{$$=yyval;insertarEnPolaca(yyval);printf("\n\t\tCTE_HEX ES factor\n"); printf("Probando: %s",$1);}
+	 ID 					{$$=$1;insertarEnPolaca($1);printf("\n\t\tID es es factor\n");}
+	|CTE_INT				{$$=$1;insertarEnPolaca($1);printf("\n\t\tCTE_INT ES factor\n");}
+	|CTE_REAL				{$$=$1;insertarEnPolaca($1);printf("\n\t\tCTE_REAL ES factor\n");}
+	|CTE_STR				{$$=$1;insertarEnPolaca($1);printf("\n\t\tCTE_STR ES factor\n");}
+	|CTE_BIN				{$$=$1;insertarEnPolaca($1);printf("\n\t\tCTE_BIN ES factor\n");}
+	|CTE_HEX				{$$=$1;insertarEnPolaca($1);printf("\n\t\tCTE_HEX ES factor\n");}
 	|PAR_A expresion PAR_C	{$$=$2;insertarEnPolaca($2);printf("\n\t\t (expresion) ES factor\n");}
-	|contar 				{$$=yyval;insertarEnPolaca($1);printf("\n\t\tcontar es factor\n");}
+	|contar 				{insertarEnPolaca($1);printf("\n\t\tcontar es factor\n");}
 	;
 contar:
 	CONTAR {contarAux = 0;} PAR_A expresion {contarAux=$3;} CIERRE_SENT CORCH_A el {contarAux = aux_contador[contarAux];} CORCH_C PAR_C {printf("\n\t\tfuncion contar\n");insertarEnPolaca(contarAux);$$=contarAux}
@@ -196,6 +208,7 @@ int main(int argc,char *argv[]){
 
 		// inicializo las pilas
 		punteroPilaIf = pilaIf;
+		punteroPilaWhile = pilaWhile;
 		tamanioDePocala = 1000;
 		polaca = malloc(tamanioDePocala * sizeof(*polaca));
 
