@@ -27,10 +27,11 @@
 
 	void avanzar();
 	void polaca(char* valor);
+	void polacaNumerica(int valor);
+	void polacaNumericaConPos(int valor, int pos);
 	void polacaConPos(char* valor, int pos);
 	void guardarPolaca();
 	int contarAux;
-	int aux_contador[];
 %}
 
 %union {
@@ -96,10 +97,11 @@ char* string;
 %type <string> expresion
 %type <string> termino
 %type <string> factor
+%type <string> comparador
 
 %%
 programa:
-	bloque {guardarPolaca(); printf("\n\t\tCompilacion exitosa\n");}
+	bloque {printf("\n\t\tCompilacion exitosa\n"); guardarPolaca();}
 bloque:
 	bloque sentencia 			{printf("\n\t\tmas de una sentencia\n");}
 	|sentencia 				{printf("\n\t\tsentencia\n");}
@@ -134,34 +136,33 @@ lista_tipos:
 seleccion:
 	IF_C PAR_A condicion PAR_C LLAVE_A 
 	bloque 
-	LLAVE_C {polacaConPos(indiceActual + 1, desapilar(punteroPilaIf)); polaca("BI"); apilar(punteroPilaIf, indiceActual); avanzar();} 
-	ELSE LLAVE_A bloque LLAVE_C 	{printf("\n\t\tIF CON ELSE\n"); polacaConPos(indiceActual + 1, desapilar(punteroPilaIf));}
+	LLAVE_C {polacaNumericaConPos(indiceActual + 1, desapilar(punteroPilaIf)); polaca("BI"); apilar(punteroPilaIf, indiceActual); avanzar();} ELSE LLAVE_A bloque LLAVE_C 	{printf("\n\t\tIF CON ELSE\n"); polacaNumericaConPos(indiceActual + 1, desapilar(punteroPilaIf));}
 
 
-	|IF_C  PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C 							{printf("\n\t\tIF SIN ELSE\n");}
+	|IF_C  PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C 							{polacaNumericaConPos(indiceActual, desapilar(punteroPilaIf));} 
 	|IF_C  PAR_A condicion PAR_C sentencia 											{printf("\n\t\tIF CON UNA SENTENCIA\n");}
 	;
 iteracion:
 	WHILE_C {apilar(punteroPilaWhile, indiceActual); polaca("ET");} PAR_A condicion {apilar(punteroPilaWhile, indiceActual); avanzar();} PAR_C LLAVE_A 
-	bloque {polaca("BI"); polacaConPos(indiceActual + 1, desapilar(punteroPilaWhile)); polaca(desapilar(punteroPilaWhile));} 
+	bloque {polaca("BI"); polacaNumericaConPos(indiceActual + 1, desapilar(punteroPilaWhile)); polacaNumerica(desapilar(punteroPilaWhile));} 
 	LLAVE_C 		{printf("\n\t\twhile(condicion){bloque} es while\n");}
 	;
 condicion:	
 	comparacion CMP_AND comparacion 		{printf("\n\t\tcomparacion AND comparacion  es condicion\n");}
-	|comparacion CMP_OR {polacaConPos(indiceActual + 1, desapilar(punteroPilaIf)); apilar(punteroPilaIf, indiceActual); avanzar();} comparacion 		{printf("\n\t\tcomparacion OR comparacion  es condicion\n");}
+	|comparacion CMP_OR {polacaNumericaConPos(indiceActual + 1, desapilar(punteroPilaIf)); apilar(punteroPilaIf, indiceActual); avanzar();} comparacion 		{printf("\n\t\tcomparacion OR comparacion  es condicion\n");}
 	|comparacion 							{printf("\n\t\tcomparacion es condicion\n");}
 	|CMP_NOT PAR_A comparacion PAR_C 		{printf("\n\t\tcomparacion negada es condicion\n");}
 	;
 comparacion:
-	expresion comparador expresion 			{printf("\n\t\texpresion comparado con expresion es comparacion\n");}
+	expresion comparador expresion 			{polaca("CMP"); polaca($2); apilar(punteroPilaIf, indiceActual); avanzar(); printf("\n\t\texpresion comparado con expresion es comparacion\n");}
 	;
 comparador: 
-	CMP_MA_IGUAL 		{polaca("CMP");polaca("BLT"); apilar(punteroPilaIf, indiceActual); avanzar();printf("\n\t\t>=  es un comparador\n");}
-	|CMP_ME_IGUAL  		{polaca("CMP");polaca("BGT"); apilar(punteroPilaIf, indiceActual); avanzar();printf("\n\t\t<=  es un comparador\n");}
-	|CMP_ME				{polaca("CMP");polaca("BGE"); apilar(punteroPilaIf, indiceActual); avanzar();printf("\n\t\t<  es un comparador\n");}
-	|CMP_MA				{polaca("CMP");polaca("BLE"); apilar(punteroPilaIf, indiceActual); avanzar();printf("\n\t\t>  es un comparador\n");}
-	|CMP_IGUAL			{polaca("CMP");polaca("BNE"); apilar(punteroPilaIf, indiceActual); avanzar();printf("\n\t\t==  es un comparador\n");}
-	|CMP_DIST			{polaca("CMP");polaca("BEQ"); apilar(punteroPilaIf, indiceActual); avanzar();printf("\n\t\t<> es un comparador\n");}
+	CMP_MA_IGUAL 		{$$="BLT"; printf("\n\t\t>=  es un comparador\n");}
+	|CMP_ME_IGUAL  		{$$="BGT"; printf("\n\t\t<=  es un comparador\n");}
+	|CMP_ME				{$$="BGE"; printf("\n\t\t<  es un comparador\n");}
+	|CMP_MA				{$$="BLE"; printf("\n\t\t>  es un comparador\n");}
+	|CMP_IGUAL			{$$="BNE"; printf("\n\t\t==  es un comparador\n");}
+	|CMP_DIST			{$$="BEQ"; printf("\n\t\t<> es un comparador\n");}
 	;
 asignacion:
 	ID {polaca($1);} OP_ASIG expresion CIERRE_SENT 	{polaca("="); printf("\n\t\tID := expresion; es una asignacion\n");}
@@ -198,7 +199,7 @@ el:
 		polaca("@contador"); 
 		polaca("1"); 
 		polaca("+");
-		polacaConPos(indiceActual, desapilar(punteroPilaContar));
+		polacaNumericaConPos(indiceActual, desapilar(punteroPilaContar));
 	} 
 	|factor { 
 		polaca("@aux");
@@ -209,7 +210,7 @@ el:
 		polaca("@contador"); 
 		polaca("1"); 
 		polaca("+");
-		polacaConPos(indiceActual, desapilar(punteroPilaContar));
+		polacaNumericaConPos(indiceActual, desapilar(punteroPilaContar));
 		} 
 	;
 %%
@@ -234,7 +235,7 @@ int main(int argc,char *argv[]){
 		punteroPilaIf = pilaIf;
 		punteroPilaWhile = pilaWhile;
 		punteroPilaContar = pilaContar;
-		tamanioDePocala = 1000;
+		tamanioDePocala = 500;
 		polacaVec = malloc(tamanioDePocala * sizeof(*polacaVec));
 
 		yyparse();
@@ -265,15 +266,37 @@ void polacaConPos(char* valor, int pos) {
 		polacaVec = realloc(polacaVec, (2 * tamanioDePocala) * sizeof(*polacaVec));
 	}
 
+	printf("\n------------> GUARDANDO: %s EN POS: %d \n\n", valor, pos);
 	polacaVec[pos] = valor;
 }
 
+
+void polacaNumerica(int valor) {
+	polacaNumericaConPos(valor, indiceActual);
+    indiceActual++;
+}
+
+
+void polacaNumericaConPos(int valor, int pos) {
+	if (pos >= tamanioDePocala) {
+		polacaVec = realloc(polacaVec, (2 * tamanioDePocala) * sizeof(*polacaVec));
+	}
+	char *buffer;
+    sprintf(buffer, "%d", valor);
+
+	printf("\n------------> GUARDANDO: %s - %d EN POS: %d \n \n", buffer, valor, pos);
+	polacaVec[pos] = buffer;
+}
+
 void guardarPolaca() {
+
 	int i = 0;
 	while (i < indiceActual) {
 		fprintf(intermedia, "%s ; ", polacaVec[i]);
 		i++;
 	}
+	
+
 }
 
 /*
