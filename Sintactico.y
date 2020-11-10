@@ -147,8 +147,8 @@ seleccion:
 	LLAVE_C {polaca("BI"); polacaNumericaConPos(indiceActual + 1, desapilar(ptrCondicion)); apilar(ptrIf, indiceActual); avanzar();} ELSE LLAVE_A bloque LLAVE_C 	{printf("\n\t\tIF CON ELSE\n"); polacaNumericaConPos(indiceActual, desapilar(ptrIf));}
 
 
-	|IF_C  PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C 							{polacaNumericaConPos(indiceActual, desapilar(ptrCondicion));} 
-	|IF_C  PAR_A condicion PAR_C sentencia 											{printf("\n\t\tIF CON UNA SENTENCIA\n");}
+	|IF_C  PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C 							{polacaNumericaConPos(indiceActual, desapilar(ptrCondicion)); printf("\n\t\tIF SIN ELSE\n");} 
+	|IF_C  PAR_A condicion PAR_C sentencia 											{polacaNumericaConPos(indiceActual, desapilar(ptrCondicion)); printf("\n\t\tIF CON UNA SENTENCIA\n");}
 	;
 iteracion:
 	WHILE_C {apilar(ptrWhile, indiceActual); polaca("ET");} PAR_A condicion PAR_C LLAVE_A 
