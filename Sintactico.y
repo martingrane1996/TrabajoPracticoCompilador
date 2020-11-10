@@ -1,6 +1,7 @@
 %{
 	#include <stdio.h>
 	#include <stdlib.h>
+	#include <string.h>
 	#include "y.tab.h"
 	int stopparser=0;
 	FILE *yyin;
@@ -31,7 +32,6 @@
 	void polacaNumericaConPos(int valor, int pos);
 	void polacaConPos(char* valor, int pos);
 	void guardarPolaca();
-	int contarAux;
 %}
 
 %union {
@@ -192,25 +192,24 @@ contar:
 el:
 	el COMA factor {
 		polaca("@aux");
-		polaca($3);
 		polaca("CMP");
 		polaca("BNE");
-		apilar(punteroPilaContar, indiceActual); avanzar(); 
+		avanzar(); 
 		polaca("@contador"); 
 		polaca("1"); 
 		polaca("+");
-		polacaNumericaConPos(indiceActual, desapilar(punteroPilaContar));
+		polacaNumericaConPos(indiceActual, indiceActual - 4);
 	} 
 	|factor { 
 		polaca("@aux");
-		polaca($1);
 		polaca("CMP");
 		polaca("BNE");
-		apilar(punteroPilaContar, indiceActual); avanzar(); 
+		apilar(punteroPilaContar, indiceActual); 
+		avanzar(); 
 		polaca("@contador"); 
 		polaca("1"); 
 		polaca("+");
-		polacaNumericaConPos(indiceActual, desapilar(punteroPilaContar));
+		polacaNumericaConPos(indiceActual, indiceActual - 4);
 		} 
 	;
 %%
@@ -235,7 +234,7 @@ int main(int argc,char *argv[]){
 		punteroPilaIf = pilaIf;
 		punteroPilaWhile = pilaWhile;
 		punteroPilaContar = pilaContar;
-		tamanioDePocala = 500;
+		tamanioDePocala = 5000;
 		polacaVec = malloc(tamanioDePocala * sizeof(*polacaVec));
 
 		yyparse();
@@ -263,11 +262,13 @@ void polaca(char* valor) {
 
 void polacaConPos(char* valor, int pos) {
 	if (pos >= tamanioDePocala) {
-		polacaVec = realloc(polacaVec, (2 * tamanioDePocala) * sizeof(*polacaVec));
-	}
+        polacaVec = realloc(polacaVec, (2 * tamanioDePocala) * sizeof(*polacaVec));
+    }
 
 	printf("\n------------> GUARDANDO: %s EN POS: %d \n\n", valor, pos);
+
 	polacaVec[pos] = valor;
+	
 }
 
 
@@ -279,13 +280,16 @@ void polacaNumerica(int valor) {
 
 void polacaNumericaConPos(int valor, int pos) {
 	if (pos >= tamanioDePocala) {
-		polacaVec = realloc(polacaVec, (2 * tamanioDePocala) * sizeof(*polacaVec));
-	}
-	char *buffer;
-    sprintf(buffer, "%d", valor);
+        polacaVec = realloc(polacaVec, (2 * tamanioDePocala) * sizeof(*polacaVec));
+    }
 
-	printf("\n------------> GUARDANDO: %s - %d EN POS: %d \n \n", buffer, valor, pos);
-	polacaVec[pos] = buffer;
+	// char buffer;
+    // sprintf(buffer, "%d", valor);
+
+	// printf("\n------------> GUARDANDO: %s - %d EN POS: %d \n \n", buffer, valor, pos);;
+
+	// polacaVec[pos] = buffer;
+	// free(buffer);
 }
 
 void guardarPolaca() {
@@ -295,6 +299,7 @@ void guardarPolaca() {
 		fprintf(intermedia, "%s ; ", polacaVec[i]);
 		i++;
 	}
+
 	
 
 }
