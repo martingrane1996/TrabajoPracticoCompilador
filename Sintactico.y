@@ -120,11 +120,11 @@ sentencia:
 	|declaracion 				{printf("\n\t\t   declaracion es sentencia\n");}
 	|iteracion 				{printf("\n\t\t iteracion es sentencia\n");}
 	|seleccion 				{printf("\n\t\t seleccion  es sentencia\n");}
-	|PUT CTE_STR CIERRE_SENT		{printf("\n\t\timprimir cadenas es sentencia\n");}
-	|PUT CTE_INT CIERRE_SENT		{printf("\n\t\timprimir INT es sentencia.\n");}
-	|PUT CTE_REAL CIERRE_SENT		{printf("\n\t\timprimir REAL es sentencia.\n");}
-	|PUT ID CIERRE_SENT			{printf("\n\t\timprimir ID es sentencia.\n");}
-	|GET ID CIERRE_SENT			{printf("\n\t\tGET ID es sentencia.\n");}
+	|PUT CTE_STR CIERRE_SENT		{polaca("PUT"); polaca($2); printf("\n\t\timprimir cadenas es sentencia\n");}
+	|PUT CTE_INT CIERRE_SENT		{polaca("PUT"); polaca($2); printf("\n\t\timprimir INT es sentencia.\n");}
+	|PUT CTE_REAL CIERRE_SENT		{polaca("PUT"); polaca($2); printf("\n\t\timprimir REAL es sentencia.\n");}
+	|PUT ID CIERRE_SENT			{polaca("PUT"); polaca($2); printf("\n\t\timprimir ID es sentencia.\n");}
+	|GET ID CIERRE_SENT			{polaca("GET"); polaca($2); printf("\n\t\tGET ID es sentencia.\n");}
 	;
 declaracion: 
 	DIM CMP_ME lista_variables CMP_MA AS CMP_ME lista_tipos CMP_MA 		{printf("\n\t\tUNA DECLARACION\n");}
@@ -308,13 +308,13 @@ void guardarPolaca() {
 	// /*
 	//	printeo los casilleros para verificar los branch más fácil
 	for (int i = 0; i < indiceActual; i++) {
-		fprintf(intermedia, "%-5d ; ", i);	
+		fprintf(intermedia, "%-10d ; ", i);	
 	} 
  	fprintf(intermedia, "\n");	
 	// */
 
 	for (int i = 0; i < indiceActual; i++) {
-		fprintf(intermedia, "%-5s ; ", polacaVec[i]);	
+		fprintf(intermedia, "%-10s ; ", polacaVec[i]);	
 	} 
 	
 }
