@@ -32,6 +32,8 @@
 	void polacaNumericaConPos(int valor, int pos);
 	void polacaConPos(char* valor, int pos);
 	void guardarPolaca();
+	
+	char *str;
 %}
 
 %union {
@@ -98,6 +100,7 @@ char* string;
 %type <string> termino
 %type <string> factor
 %type <string> comparador
+%type <string> contar
 
 %%
 programa:
@@ -188,7 +191,7 @@ factor:
 	;
 contar:
 	CONTAR {polaca("@contador");polaca("0");polaca("=");polaca("@aux");} PAR_A expresion {polaca("=");} CIERRE_SENT CORCH_A el
-	 CORCH_C PAR_C {printf("\n\t\tfuncion contar\n");}
+	 CORCH_C PAR_C {polaca("@contador"); printf("\n\t\tfuncion contar\n");}
 el:
 	el COMA factor {
 		polaca("@aux");
@@ -283,13 +286,15 @@ void polacaNumericaConPos(int valor, int pos) {
         polacaVec = realloc(polacaVec, (2 * tamanioDePocala) * sizeof(*polacaVec));
     }
 
-	// char buffer;
-    // sprintf(buffer, "%d", valor);
+	str = malloc(sizeof(char)*4);
+
+    sprintf(str, "%d", valor);
 
 	// printf("\n------------> GUARDANDO: %s - %d EN POS: %d \n \n", buffer, valor, pos);;
+	polacaVec[pos] = malloc(sizeof(char)*4);
 
-	// polacaVec[pos] = buffer;
-	// free(buffer);
+	strcpy(polacaVec[pos], str);
+	free(str);
 }
 
 void guardarPolaca() {
