@@ -1,9 +1,10 @@
 Nombre                        	Tipo           	Valor          	Longitud       
 a                             	id             
+0                             	int            
+a                             	id             
 5                             	int            
-b                             	id             
-12414                         	int            
-c                             	id             
-12                            	int            
-d                             	id             
-125                           	int            
+a                             	id             
+0                             	int            
+a                             	id             
+a                             	id             
+1                             	int            
