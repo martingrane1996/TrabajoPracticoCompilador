@@ -127,7 +127,8 @@ WHILE_C 	"while"|"WHILE"|"While"
 					return (CTE_INT);
 				} 		 	
 {CTE_REAL}		{
-					long result = strtol(yytext, &yytext, 10);
+					char* algo;
+					long result = strtol(yytext, &algo, 10);
 					if (result > 4294967296) {
 						printf ("\nDetecto CTE_REAL demasiado larga\n"); 
 						exit(1);
