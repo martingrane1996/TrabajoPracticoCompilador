@@ -2,6 +2,7 @@
 	#include <stdio.h>
 	#include <stdlib.h>
 	#include <string.h>
+	#include <ctype.h>
 	#include "y.tab.h"
 	int stopparser=0;
 	FILE *yyin;
@@ -22,24 +23,8 @@
 	int pilaContar[50];
 	int *ptrContar;
 
-	char* pilaDeVariables[50];
-	char* *ptrVariables;
-	int contadorVar;
-
-	char* pilaDeTipos[50];
-	char* *ptrTipos;
-	int contadorTipos;
-
 	#define apilar(puntero, valor) (*((puntero)++) = (valor))
 	#define desapilar(puntero) (*--(puntero))
-
-	// tabla de simbolos
-	char** nombreTS;
-	char** tipoTS;
-	char** valorTS;
-	int* longitudTS;
-
-	int indiceActualTs;
 
 	char** polacaVec;
 	int tamanioDePocala;
@@ -53,8 +38,6 @@
 	char* invertirCondicion(char* condicion);
 	void guardarPolaca();
 	void generarAssembler();
-	void actualizarTS();
-	int buscarIndice(char* lexema);
 	char *str;
 %}
 
@@ -191,7 +174,7 @@ comparador:
 	|CMP_DIST			{$$="BEQ"; printf("\n\t\t<> es un comparador\n");}
 	;
 asignacion:
-	ID {polaca($1);} OP_ASIG expresion CIERRE_SENT 	{polaca("="); printf("\n\t\tID := expresion; es una asignacion\n");}
+	ID OP_ASIG expresion CIERRE_SENT 	{polaca("=");polaca($1); printf("\n\t\tID := expresion; es una asignacion\n");}
 	;
 expresion: 
 	expresion OP_SUM termino 		{polaca("+");printf("\n\t\texpresion+termino es expresion\n");}
@@ -213,8 +196,9 @@ factor:
 	|contar 				{printf("\n\t\tcontar es factor\n");}
 	;
 contar:
-	CONTAR {polaca("@contador");polaca("0");polaca("=");polaca("@aux");} PAR_A expresion {polaca("=");} CIERRE_SENT CORCH_A el
-	 CORCH_C PAR_C {polaca("@contador"); printf("\n\t\tfuncion contar\n");}
+	CONTAR PAR_A{polaca("@contador");}  expresion {polaca("=");polaca("@aux");} CIERRE_SENT CORCH_A el
+	 CORCH_C PAR_C {polaca("@contador"); printf("\n\t\tfuncion contar\n");} 
+	;
 el:
 	el COMA factor {
 		polaca("@aux");
@@ -224,9 +208,13 @@ el:
 		polaca("@contador"); 
 		polaca("1"); 
 		polaca("+");
-		polacaNumericaConPos(indiceActual, indiceActual - 4);
+		polaca("=");
+		polaca("@contador");
+		polacaNumericaConPos(indiceActual, indiceActual - 6);
+		char *aux_str=malloc(sizeof(char)*4); sprintf(aux_str, "ETIQ_%d",indiceActual);polaca(aux_str);
 	} 
-	|factor { 
+	|factor {
+	
 		polaca("@aux");
 		polaca("CMP");
 		polaca("BNE");
@@ -235,7 +223,10 @@ el:
 		polaca("@contador"); 
 		polaca("1"); 
 		polaca("+");
-		polacaNumericaConPos(indiceActual, indiceActual - 4);
+		polaca("=");
+		polaca("@contador"); 
+		polacaNumericaConPos(indiceActual, indiceActual - 6);
+		char *aux_str=malloc(sizeof(char)*4); sprintf(aux_str, "ETIQ_%d",indiceActual);polaca(aux_str);
 		} 
 	;
 %%
@@ -248,9 +239,6 @@ int main(int argc,char *argv[]){
 		tablaDeSimbolos = fopen ("ts.txt", "w");
 		intermedia = fopen ("intermedia.txt", "w");
 		indiceActual = 0;
-		indiceActualTs = 0;
-		contadorTipos = 0;
-		contadorVar = 0;
 		
 		if (tablaDeSimbolos == NULL) {
 			printf("\n\t\t No se crear la tabla de simbolos!");
@@ -264,15 +252,8 @@ int main(int argc,char *argv[]){
 		ptrWhile = pilaWhile;
 		ptrCondicion = pilaCondicion;
 		ptrContar = pilaContar;
-  		ptrVariables = pilaDeVariables;
-		ptrTipos = pilaDeTipos;
-
 		tamanioDePocala = 2000;
 		polacaVec = malloc(tamanioDePocala * sizeof(*polacaVec));
-		nombreTS = malloc(tamanioDePocala * 4 * sizeof(char));
-		tipoTS = malloc(tamanioDePocala * 4 * sizeof(char));
-		valorTS = malloc(tamanioDePocala * 4 * sizeof(char));
-		longitudTS = malloc(tamanioDePocala * 4 * sizeof(char));
 
 		yyparse();
 		fclose(tablaDeSimbolos);
@@ -321,9 +302,9 @@ void polacaNumericaConPos(int valor, int pos) {
     }
 
 	str = malloc(sizeof(char)*4);
-    sprintf(str, "%d", valor);
+    sprintf(str, "ETIQ_%d", valor);
 
-	printf("\n------------> GUARDANDO: %d EN POS: %d <------------\n \n", valor, pos);;
+	printf("\n------------> GUARDANDO: %d EN POS: %d <------------\n \n", valor, pos);
 	polacaVec[pos] = malloc(sizeof(char)*4);
 
 	strcpy(polacaVec[pos], str);
@@ -345,10 +326,6 @@ void guardarPolaca() {
 	for ( i = 0; i < indiceActual; i++) {
 		fprintf(intermedia, "%s\n", polacaVec[i]);	
 	} 
-
-	for (i = 0; i < indiceActualTs; i++) {
-		fprintf(tablaDeSimbolos, "%-30s\t%-15s\t%-15s\t%-15d\n", nombreTS[i], tipoTS[i], valorTS[i], longitudTS[i]);
-	}
 	fclose(intermedia);
 	
 }
@@ -380,78 +357,51 @@ char* invertirCondicion(char* condicion) {
 void generarAssembler(int pos){
 	int pos1 = 0,i,cont_aux=0,tamanioDePocala = 2000,es_operador=0 ;
 	char **pila = malloc(tamanioDePocala * sizeof(*pila));
-	char **aux=malloc(tamanioDePocala * sizeof(*pila));
-		for( i=0; i < pos;i++){
-			//printf("valores de mi pila: %s \n",polacaVec[i]);
-			pila[pos1] = malloc(sizeof(char)*4);
-			if(strcmp ("+",polacaVec[i]) == 0){
-				es_operador = 1;
-				pila[pos1] = "fadd";
-			}
-			if(strcmp ("*",polacaVec[i]) == 0){
-				es_operador = 1;
-				pila[pos1] = "fmul";
-			}
-			if(strcmp ("/",polacaVec[i]) == 0){
-				es_operador = 1;
-				pila[pos1] = "fdiv";
-			}
-			if(strcmp ("-",polacaVec[i]) == 0){
-				es_operador = 1;
-				pila[pos1] = "fdif";
-			}
-			if(strcmp ("=",polacaVec[i]) == 0){
-				es_operador = 1;
-				cont_aux = pos1 - cont_aux;
-				pila[pos1] = "fstp";
-				strcat(pila[pos1],polacaVec[cont_aux]);
-			}			
-			
-			if(es_operador == 0){
-				cont_aux++;
-				strcpy(pila[pos1],polacaVec[i]);
-				
-			}
-			pos1++;
-			es_operador = 0;
-		}
+	FILE *asm1;
+	asm1 = fopen("assembler.asm", "w");
+
+	for( i=0; i < pos;i++){
+		//pila[pos1] = malloc(sizeof(char)*4);
 		
-		for( i=0; i < pos1;i++){
-			printf("valores de mi pila: %s \n",pila[i]);
-		}
+		if(strcmp(polacaVec[i], "BI")==0 ||   strcmp(polacaVec[i], "BNE")==0 || strcmp(polacaVec[i], "BLE") == 0 ||strcmp(polacaVec[i], "BGT") == 0 || strcmp(polacaVec[i], "BGE") == 0 || strcmp(polacaVec[i], "BLT") == 0){
+			fprintf(asm1,"%s ",polacaVec[i]);
+			i++;
+			fprintf(asm1,"%s\n",polacaVec[i]);
+			es_operador =1;
+		}		
 		
+		if(strcmp ("+",polacaVec[i]) == 0){
+			es_operador = 1;
+			fprintf(asm1,"%s\n","fadd");
+		}
+		if(strcmp ("*",polacaVec[i]) == 0){
+			es_operador = 1;
+			fprintf(asm1,"%s\n","fmul");
+		}
+		if(strcmp ("/",polacaVec[i]) == 0){
+			es_operador = 1;
+			fprintf(asm1,"%s\n","fdiv");
+		}
+		if(strcmp ("-",polacaVec[i]) == 0){
+			es_operador = 1;
+			fprintf(asm1,"%s\n","fdif");
+		}
+		if(strcmp ("=",polacaVec[i]) == 0){
+			es_operador = 1;
+			i++;
+			fprintf(asm1,"fstp %s\n",polacaVec[i]);
+		}		
+		
+		if(es_operador == 0 ){
+			if(atoi(polacaVec[i]) != 0){ 
+				fprintf(asm1,"_%s\n",polacaVec[i]);
+			}else{ 
+				fprintf(asm1,"%s\n",polacaVec[i]);	
+			}
+		}
+		es_operador = 0;
+	}
+	fclose(asm1);
 	
 }
 
-void actualizarTS() {
-	while (contadorVar > 0) {
-		int indice = buscarIndice(desapilar(ptrVariables));
-		char* tipo = desapilar(ptrTipos);
-		strcpy(tipoTS[indice], tipo);
-
-		printf("ACTUALIZANDO TS indice %d, %s\n", indice, tipo);
-		contadorVar--;
-		contadorTipos--;
-	}
-
-	if (contadorTipos != 0) {
-		printf("Error en la cantidad de elementos en la declaración");
-		exit(1);
-	}
-	
-}
-
-
-int buscarIndice(char* lexema) {
-	int i = 0;
-
-	while (i < indiceActualTs) {
-		if (strcmp(lexema, nombreTS[i]) == 0) {
-			return i;
-		}
-		i++;
-	}
-
-	printf("Elemento no encontrado en tabla de simbolos");
-	exit(1);
-}
