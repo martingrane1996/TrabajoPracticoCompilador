@@ -23,8 +23,24 @@
 	int pilaContar[50];
 	int *ptrContar;
 
+    char* pilaDeVariables[50];
+    char* *ptrVariables;
+    int contadorVar;
+
+    char* pilaDeTipos[50];
+    char* *ptrTipos;
+    int contadorTipos;
+
 	#define apilar(puntero, valor) (*((puntero)++) = (valor))
 	#define desapilar(puntero) (*--(puntero))
+
+	// tabla de simbolos
+    char** nombreTS;
+    char** tipoTS;
+    char** valorTS;
+    int* longitudTS;
+
+    int indiceActualTs;
 
 	char** polacaVec;
 	int tamanioDePocala;
@@ -39,6 +55,9 @@
 	void guardarPolaca();
 	void generarAssembler();
 	char *str;
+	void actualizarTS();
+    int buscarIndice(char* lexema);
+
 %}
 
 %union {
@@ -128,20 +147,20 @@ sentencia:
 	|GET ID CIERRE_SENT			{polaca("GET"); polaca($2); printf("\n\t\tGET ID es sentencia.\n");}
 	;
 declaracion: 
-	DIM CMP_ME lista_variables CMP_MA AS CMP_ME lista_tipos CMP_MA 		{printf("\n\t\tUNA DECLARACION\n");}
-	;
+    DIM CMP_ME lista_variables CMP_MA AS CMP_ME lista_tipos CMP_MA      {actualizarTS();printf("\n\t\tUNA DECLARACION\n");}
+    ;
 lista_variables:
-	lista_variables COMA ID 		{printf("\n\t\tlista_variables,ID es lista_variables\n");}
-	|ID 							{printf("\n\t\tlista_variables es ID.\n");}
-	;
+    lista_variables COMA ID         {printf("\n\t\tlista_variables,ID es lista_variables\n");apilar(ptrVariables, $3); contadorVar++;}
+    |ID                             {printf("\n\t\tlista_variables es ID.\n");apilar(ptrVariables, $1); contadorVar++;}
+    ;
 lista_tipos:
-	lista_tipos COMA REAL 			{printf("\n\t\tlista_tipos,REAL es lista_tipos\n");}
-	|lista_tipos COMA INTEGER 		{printf("\n\t\tlista_tipos,INTEGER es lista_tipos\n");}
-	|lista_tipos COMA STRING 		{printf("\n\t\tlista_tipos,STRING es lista_tipos\n");}
-	|REAL 							{printf("\n\t\tlista_tipos es REAL\n");}
-	|INTEGER 						{printf("\n\t\tlista_tipos es INTEGER\n");}
-	|STRING 						{printf("\n\t\tlista_tipos es STRING\n");}	
-	;
+    lista_tipos COMA REAL           {printf("\n\t\tlista_tipos,REAL es lista_tipos\n");apilar(ptrTipos, "real"); contadorTipos++;}
+    |lista_tipos COMA INTEGER       {printf("\n\t\tlista_tipos,INTEGER es lista_tipos\n");apilar(ptrTipos, "int"); contadorTipos++;}
+    |lista_tipos COMA STRING        {printf("\n\t\tlista_tipos,STRING es lista_tipos\n");apilar(ptrTipos, "string"); contadorTipos++;}
+    |REAL                           {printf("\n\t\tlista_tipos es REAL\n");apilar(ptrTipos, "real"); contadorTipos++;}
+    |INTEGER                        {printf("\n\t\tlista_tipos es INTEGER\n");apilar(ptrTipos, "int"); contadorTipos++;}
+    |STRING                         {printf("\n\t\tlista_tipos es STRING\n");apilar(ptrTipos, "string"); contadorTipos++;}  
+    ;
 seleccion:
 	IF_C PAR_A condicion PAR_C LLAVE_A 
 	bloque 
@@ -239,6 +258,10 @@ int main(int argc,char *argv[]){
 		tablaDeSimbolos = fopen ("ts.txt", "w");
 		intermedia = fopen ("intermedia.txt", "w");
 		indiceActual = 0;
+
+        indiceActualTs = 0;
+        contadorTipos = 0;
+        contadorVar = 0;
 		
 		if (tablaDeSimbolos == NULL) {
 			printf("\n\t\t No se crear la tabla de simbolos!");
@@ -252,8 +275,14 @@ int main(int argc,char *argv[]){
 		ptrWhile = pilaWhile;
 		ptrCondicion = pilaCondicion;
 		ptrContar = pilaContar;
+		ptrVariables = pilaDeVariables;
+        ptrTipos = pilaDeTipos;
 		tamanioDePocala = 2000;
 		polacaVec = malloc(tamanioDePocala * sizeof(*polacaVec));
+		nombreTS = malloc(tamanioDePocala * 4 * sizeof(char));
+        tipoTS = malloc(tamanioDePocala * 4 * sizeof(char));
+        valorTS = malloc(tamanioDePocala * 4 * sizeof(char));
+        longitudTS = malloc(tamanioDePocala * 4 * sizeof(char));
 
 		yyparse();
 		fclose(tablaDeSimbolos);
@@ -326,6 +355,11 @@ void guardarPolaca() {
 	for ( i = 0; i < indiceActual; i++) {
 		fprintf(intermedia, "%s\n", polacaVec[i]);	
 	} 
+
+	for (i = 0; i < indiceActualTs; i++) {
+        fprintf(tablaDeSimbolos, "%-30s\t%-15s\t%-15s\t%-15d\n", nombreTS[i], tipoTS[i], valorTS[i], longitudTS[i]);
+    }
+
 	fclose(intermedia);
 	
 }
@@ -363,7 +397,7 @@ void generarAssembler(int pos){
 		exit(1);
 	}
 	fprintf(asm1, "include macros2.asm %s\n",polacaVec[0]);
-	fprintf(asm1, "include number.asm\n"," ");
+	fprintf(asm1, "include number.asm\n");
 	fprintf(asm1, ".MODEL	LARGE \n");
 	fprintf(asm1, ".386\n");
 	fprintf(asm1, ".STACK 200h \n");
@@ -375,7 +409,7 @@ void generarAssembler(int pos){
     fprintf(asm1, "\n");
     fprintf(asm1, "\t MOV AX,@DATA 	;inicializa el segmento de datos\n");
     fprintf(asm1, "\t MOV DS,AX \n");
-    fprintf(asm1, "\t MOV ES,AX \n"," ");
+    fprintf(asm1, "\t MOV ES,AX \n");
     fprintf(asm1, "\t FNINIT \n");
     fprintf(asm1, "\n");
 	
@@ -425,3 +459,35 @@ void generarAssembler(int pos){
 	
 }
 
+void actualizarTS() {
+    while (contadorVar > 0) {
+        int indice = buscarIndice(desapilar(ptrVariables));
+        char* tipo = desapilar(ptrTipos);
+        strcpy(tipoTS[indice], tipo);
+
+        printf("ACTUALIZANDO TS indice %d, %s\n", indice, tipo);
+        contadorVar--;
+        contadorTipos--;
+    }
+
+    if (contadorTipos != 0) {
+        printf("Error en la cantidad de elementos en la declaración");
+        exit(1);
+    }
+    
+}
+
+
+int buscarIndice(char* lexema) {
+    int i = 0;
+
+    while (i < indiceActualTs) {
+        if (strcmp(lexema, nombreTS[i]) == 0) {
+            return i;
+        }
+        i++;
+    }
+
+    printf("Elemento no encontrado en tabla de simbolos");
+    exit(1);
+}
