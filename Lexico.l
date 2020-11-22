@@ -177,7 +177,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 {WHILE_C}			{printf ("\nDetecto WHILE_C ' %s ' en linea %d\n",yytext,yylineno); return (WHILE_C);}  
 {ID}				{
 						printf ("\nDetecto ID ' %s ' en linea %d\n",yytext,yylineno); 
-						insertarEnTablaDeSimbolos(yytext, "id", "", 0);
+						insertarEnTablaDeSimbolos(yytext, "", "", 0);
 						yylval.id=strdup(yytext);
 					
 						return (ID);
@@ -202,7 +202,6 @@ int validarTamano(char* texto, int tamano){
 int insertarEnTablaDeSimbolos(char* lexema, char* tipo, char* valor, int longitud) {
 	int verificacion = verificarEnTablaDeSimbolos(lexema, tipo);
 	if (verificacion == 2) {
-		fprintf(tablaDeSimbolos, "%-30s\t%-15s\t%-15s\t%-15d\n", lexema, tipo, valor, longitud);
 		printf("-----------------------> %s\t%s\t%s\t%d indice actual %d\n", lexema, tipo, valor, longitud, indiceActualTs);
 		nombreTS[indiceActualTs] = malloc(sizeof(char)*4);
 		tipoTS[indiceActualTs] = malloc(sizeof(char)*4);
@@ -213,7 +212,7 @@ int insertarEnTablaDeSimbolos(char* lexema, char* tipo, char* valor, int longitu
 		longitudTS[indiceActualTs] = longitud;
 		indiceActualTs++;
 	} else if (verificacion == 1) {
-		printf("Variable declarada con dos tipos diferentes");
+		printf("Variable declarada con dos tipos diferentes %s %s", lexema, tipo);
 		exit(1);
 	}
 
@@ -230,11 +229,7 @@ int verificarEnTablaDeSimbolos(char* lexema, char* tipo) {
 
 	while (i < indiceActualTs) {
 		if (strcmp(lexema, nombreTS[i]) == 0) {
-			if (strcmp(tipo, tipoTS[i]) == 0) {
-				return 0;
-			} else {
-				return 1;
-			}
+			return 0;
 		}
 		i++;
 	}
