@@ -148,16 +148,16 @@ declaracion:
 	DIM CMP_ME lista_variables CMP_MA AS CMP_ME lista_tipos CMP_MA 		{actualizarTS();printf("\n\t\tUNA DECLARACION\n");}
 	;
 lista_variables:
-	lista_variables COMA ID 		{polaca(",");polaca($3);printf("\n\t\tlista_variables,ID es lista_variables\n");apilar(ptrVariables, $3); contadorVar++;}
-	|ID 							{polaca($1);printf("\n\t\tlista_variables es ID.\n");apilar(ptrVariables, $1); contadorVar++;}
+	lista_variables COMA ID 		{printf("\n\t\tlista_variables,ID es lista_variables\n");apilar(ptrVariables, $3); contadorVar++;}
+	|ID 							{printf("\n\t\tlista_variables es ID.\n");apilar(ptrVariables, $1); contadorVar++;}
 	;
 lista_tipos:
-	lista_tipos COMA REAL 			{polaca(",");polaca("REAL");printf("\n\t\tlista_tipos,REAL es lista_tipos\n");apilar(ptrTipos, "real"); contadorTipos++;}
-	|lista_tipos COMA INTEGER 		{polaca(",");polaca("INTEGER");printf("\n\t\tlista_tipos,INTEGER es lista_tipos\n");apilar(ptrTipos, "int"); contadorTipos++;}
-	|lista_tipos COMA STRING 		{polaca(",");polaca("STRING");printf("\n\t\tlista_tipos,STRING es lista_tipos\n");apilar(ptrTipos, "string"); contadorTipos++;}
-	|REAL 							{polaca("REAL");printf("\n\t\tlista_tipos es REAL\n");apilar(ptrTipos, "real"); contadorTipos++;}
-	|INTEGER 						{polaca("INTEGER");printf("\n\t\tlista_tipos es INTEGER\n");apilar(ptrTipos, "int"); contadorTipos++;}
-	|STRING 						{polaca("STRING");printf("\n\t\tlista_tipos es STRING\n");apilar(ptrTipos, "string"); contadorTipos++;}	
+	lista_tipos COMA REAL 			{printf("\n\t\tlista_tipos,REAL es lista_tipos\n");apilar(ptrTipos, "real"); contadorTipos++;}
+	|lista_tipos COMA INTEGER 		{printf("\n\t\tlista_tipos,INTEGER es lista_tipos\n");apilar(ptrTipos, "int"); contadorTipos++;}
+	|lista_tipos COMA STRING 		{printf("\n\t\tlista_tipos,STRING es lista_tipos\n");apilar(ptrTipos, "string"); contadorTipos++;}
+	|REAL 							{printf("\n\t\tlista_tipos es REAL\n");apilar(ptrTipos, "real"); contadorTipos++;}
+	|INTEGER 						{printf("\n\t\tlista_tipos es INTEGER\n");apilar(ptrTipos, "int"); contadorTipos++;}
+	|STRING 						{printf("\n\t\tlista_tipos es STRING\n");apilar(ptrTipos, "string"); contadorTipos++;}	
 	;
 seleccion:
 	IF_C PAR_A condicion PAR_C LLAVE_A 
