@@ -36,7 +36,7 @@
 	void polacaConPos(char* valor, int pos);
 	char* invertirCondicion(char* condicion);
 	void guardarPolaca();
-	
+	void generarAssembler();
 	char *str;
 %}
 
@@ -109,7 +109,7 @@ char* string;
 
 %%
 programa:
-	bloque {printf("\n\t\tCompilacion exitosa\n"); guardarPolaca();}
+	bloque {printf("\n\t\tCompilacion exitosa\n"); guardarPolaca();generarAssembler(indiceActual);}
 bloque:
 	bloque sentencia 			{printf("\n\t\tmas de una sentencia\n");}
 	|sentencia 				{printf("\n\t\tsentencia\n");}
@@ -295,7 +295,7 @@ void polacaNumericaConPos(int valor, int pos) {
 	str = malloc(sizeof(char)*4);
     sprintf(str, "%d", valor);
 
-	printf("\n------------> GUARDANDO: %d EN POS: %d <------------\n \n", valor, pos);;
+	printf("\n------------> GUARDANDO: %d EN POS: %d <------------\n \n", valor, pos);
 	polacaVec[pos] = malloc(sizeof(char)*4);
 
 	strcpy(polacaVec[pos], str);
@@ -307,15 +307,17 @@ void guardarPolaca() {
 
 	// /*
 	//	printeo los casilleros para verificar los branch más fácil
-	for (int i = 0; i < indiceActual; i++) {
+	/*
+	for ( i = 0; i < indiceActual; i++) {
 		fprintf(intermedia, "%-10d ; ", i);	
 	} 
- 	fprintf(intermedia, "\n");	
+ 	fprintf(intermedia, "\n");*/	
 	// */
 
-	for (int i = 0; i < indiceActual; i++) {
-		fprintf(intermedia, "%-10s ; ", polacaVec[i]);	
+	for ( i = 0; i < indiceActual; i++) {
+		fprintf(intermedia, "%s\n", polacaVec[i]);	
 	} 
+	fclose(intermedia);
 	
 }
 
@@ -343,14 +345,47 @@ char* invertirCondicion(char* condicion) {
 	}
 }
 
-/*
-void insertar_en_polaca (char* valor){
-	FILE *fp;
-	fp = fopen ("intermedia.txt", "a");
-	if (fp==NULL) {printf ("File error",stderr); exit (1);}
-	fwrite(tabla1, 4, sizeof(, mihandle);
+void generarAssembler(int pos){
+	int pos1 = 0,i,cont_aux=0,tamanioDePocala = 2000,es_operador=0 ;
+	char **pila = malloc(tamanioDePocala * sizeof(*pila));
+	char **aux=malloc(tamanioDePocala * sizeof(*pila));
+		for( i=0; i < pos;i++){
+			//printf("valores de mi pila: %s \n",polacaVec[i]);
+			pila[pos1] = malloc(sizeof(char)*4);
+			if(strcmp ("+",polacaVec[i]) == 0){
+				es_operador = 1;
+				pila[pos1] = "fadd";
+			}
+			if(strcmp ("*",polacaVec[i]) == 0){
+				es_operador = 1;
+				pila[pos1] = "fmul";
+			}
+			if(strcmp ("/",polacaVec[i]) == 0){
+				es_operador = 1;
+				pila[pos1] = "fdiv";
+			}
+			if(strcmp ("-",polacaVec[i]) == 0){
+				es_operador = 1;
+				pila[pos1] = "fdif";
+			}
+			if(strcmp ("=",polacaVec[i]) == 0){
+				es_operador = 1;
+				cont_aux = pos1 - cont_aux;
+			}			
+			
+			if(es_operador == 0){
+				cont_aux++;
+				strcpy(pila[pos1],polacaVec[i]);
+				
+			}
+			pos1++;
+			es_operador = 0;
+		}
+		
+		for( i=0; i < pos1;i++){
+			printf("valores de mi pila: %s \n",pila[i]);
+		}
+		
 	
-	fclose ( fp );
-}*/
-
+}
 
