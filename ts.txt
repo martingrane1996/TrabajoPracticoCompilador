@@ -1,41 +1,21 @@
 Nombre                        	Tipo           	Valor          	Longitud       
-contador                      	id             
-promedio                      	id             
-actual                        	id             
-suma                          	id             
-"String1"                     	string         
-"String2"                     	string         
-actual                        	id             
-contador                      	id             
-0                             	int            
-suma                          	id             
-.5                            	real           
-0xA2B0                        	hex            
-contador                      	id             
-92                            	int            
-contador                      	id             
-contador                      	id             
-1                             	int            
-actual                        	id             
-contador                      	id             
-.342                          	real           
-contador                      	id             
-actual                        	id             
-contador                      	id             
-256                           	int            
-0b10                          	bin            
-52                            	int            
-4                             	int            
-suma                          	id             
-suma                          	id             
-actual                        	id             
-"String3"                     	string         
-suma                          	id             
-actual                        	id             
-0b10                          	bin            
-actual                        	id             
-0                             	int            
-"String4"                     	string         
-actual                        	id             
-0b111010                      	bin            
-"String5"                     	string         
+contador                      	id             	               	0              
+promedio                      	id             	               	0              
+actual                        	id             	               	0              
+suma                          	id             	               	0              
+"String1"                     	string         	"String1"      	9              
+"String2"                     	string         	"String2"      	9              
+0                             	int            	0              	1              
+.5                            	real           	.5             	2              
+0xA2B0                        	hex            	0xA2B0         	6              
+92                            	int            	92             	2              
+1                             	int            	1              	1              
+.342                          	real           	.342           	4              
+256                           	int            	256            	3              
+0b10                          	bin            	0b10           	4              
+52                            	int            	52             	2              
+4                             	int            	4              	1              
+"String3"                     	string         	"String3"      	9              
+"String4"                     	string         	"String4"      	9              
+0b111010                      	bin            	0b111010       	8              
+"String5"                     	string         	"String5"      	9              

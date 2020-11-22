@@ -25,6 +25,14 @@
 	#define apilar(puntero, valor) (*((puntero)++) = (valor))
 	#define desapilar(puntero) (*--(puntero))
 
+	// tabla de simbolos
+	char** nombreTS;
+	char** tipoTS;
+	char** valorTS;
+	int* longitudTS;
+
+	int indiceActualTs;
+
 	char** polacaVec;
 	int tamanioDePocala;
 	int indiceActual;
@@ -230,6 +238,7 @@ int main(int argc,char *argv[]){
 		tablaDeSimbolos = fopen ("ts.txt", "w");
 		intermedia = fopen ("intermedia.txt", "w");
 		indiceActual = 0;
+		indiceActualTs = 0;
 		
 		if (tablaDeSimbolos == NULL) {
 			printf("\n\t\t No se crear la tabla de simbolos!");
@@ -245,6 +254,10 @@ int main(int argc,char *argv[]){
 		ptrContar = pilaContar;
 		tamanioDePocala = 2000;
 		polacaVec = malloc(tamanioDePocala * sizeof(*polacaVec));
+		nombreTS = malloc(tamanioDePocala * 4 * sizeof(char));
+		tipoTS = malloc(tamanioDePocala * 4 * sizeof(char));
+		valorTS = malloc(tamanioDePocala * 4 * sizeof(char));
+		longitudTS = malloc(tamanioDePocala * 4 * sizeof(char));
 
 		yyparse();
 		fclose(tablaDeSimbolos);
@@ -274,7 +287,7 @@ void polacaConPos(char* valor, int pos) {
         polacaVec = realloc(polacaVec, (2 * tamanioDePocala) * sizeof(*polacaVec));
     }
 
-	printf("\n------------> GUARDANDO: %s EN POS: %d <------------\n\n", valor, pos);
+	//printf("\n------------> GUARDANDO: %s EN POS: %d <------------\n\n", valor, pos);
 
 	polacaVec[pos] = valor;
 	
@@ -295,7 +308,7 @@ void polacaNumericaConPos(int valor, int pos) {
 	str = malloc(sizeof(char)*4);
     sprintf(str, "%d", valor);
 
-	printf("\n------------> GUARDANDO: %d EN POS: %d <------------\n \n", valor, pos);
+	printf("\n------------> GUARDANDO: %d EN POS: %d <------------\n \n", valor, pos);;
 	polacaVec[pos] = malloc(sizeof(char)*4);
 
 	strcpy(polacaVec[pos], str);

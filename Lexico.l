@@ -8,7 +8,16 @@
 	int TK_INVALID_STRING;
 	int validarTamano(char*, int);
 	FILE * tablaDeSimbolos;
-	int insertarEnTablaDeSimbolos(char* lexema, char* tipo);
+	int insertarEnTablaDeSimbolos(char* lexema, char* tipo, char* valor, int longitud);
+	int verificarEnTablaDeSimbolos(char* lexema, char* tipo);
+
+// tabla de simbolos
+	char** nombreTS;
+	char** tipoTS;
+	char** valorTS;
+	int* longitudTS;
+	int indiceActualTs;
+
 %}
 
 %option noyywrap
@@ -87,7 +96,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 						exit(1);
 					}
 					printf ("\nDetecto CTE_BIN ' %s ' en linea %d\n",yytext,yylineno); 
-					insertarEnTablaDeSimbolos(yytext, "bin");
+					insertarEnTablaDeSimbolos(yytext, "bin", yytext, strlen(yytext));
 					yylval.bin=strdup(yytext);
 					return (CTE_BIN);
 				}  
@@ -98,7 +107,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 					}
 
 					printf ("\nDetecto CTE_HEX ' %s ' en linea %d\n",yytext,yylineno);
-					insertarEnTablaDeSimbolos(yytext, "hex");
+					insertarEnTablaDeSimbolos(yytext, "hex", yytext, strlen(yytext));
 					yylval.hex=strdup(yytext);
 					return (CTE_HEX);
 				}  
@@ -113,7 +122,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 					}
 
 					printf ("\nDetecto CTE_INT ' %s ' en linea %d\n",yytext,yylineno);
-					insertarEnTablaDeSimbolos(yytext, "int");
+					insertarEnTablaDeSimbolos(yytext, "int", yytext, strlen(yytext));
 					yylval.num=strdup(yytext);
 					return (CTE_INT);
 				} 		 	
@@ -128,7 +137,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 					}
 
 					printf ("\nDetecto CTE_REAL ' %s ' en linea %d\n",yytext,yylineno);
-					insertarEnTablaDeSimbolos(yytext, "real");
+					insertarEnTablaDeSimbolos(yytext, "real", yytext, strlen(yytext));
 					yylval.real=strdup(yytext);
 					return (CTE_REAL);
 				}
@@ -139,7 +148,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 					}
 
 					printf ("\nDetecto CTE_STR ' %s ' en linea %d\n",yytext,yylineno);
-					insertarEnTablaDeSimbolos(yytext, "string");
+					insertarEnTablaDeSimbolos(yytext, "string", yytext, strlen(yytext));
 					yylval.string=strdup(yytext);
 					return (CTE_STR); 	
 				}  
@@ -168,7 +177,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 {WHILE_C}			{printf ("\nDetecto WHILE_C ' %s ' en linea %d\n",yytext,yylineno); return (WHILE_C);}  
 {ID}				{
 						printf ("\nDetecto ID ' %s ' en linea %d\n",yytext,yylineno); 
-						insertarEnTablaDeSimbolos(yytext, "id");
+						insertarEnTablaDeSimbolos(yytext, "id", "", 0);
 						yylval.id=strdup(yytext);
 					
 						return (ID);
@@ -190,7 +199,46 @@ int validarTamano(char* texto, int tamano){
 	return 0;
 }
 
-int insertarEnTablaDeSimbolos(char* lexema, char* tipo) {
-   fprintf(tablaDeSimbolos, "%-30s\t%-15s\n", lexema, tipo);
+int insertarEnTablaDeSimbolos(char* lexema, char* tipo, char* valor, int longitud) {
+	int verificacion = verificarEnTablaDeSimbolos(lexema, tipo);
+	if (verificacion == 2) {
+		fprintf(tablaDeSimbolos, "%-30s\t%-15s\t%-15s\t%-15d\n", lexema, tipo, valor, longitud);
+		printf("-----------------------> %s\t%s\t%s\t%d indice actual %d\n", lexema, tipo, valor, longitud, indiceActualTs);
+		nombreTS[indiceActualTs] = malloc(sizeof(char)*4);
+		tipoTS[indiceActualTs] = malloc(sizeof(char)*4);
+		valorTS[indiceActualTs] = malloc(sizeof(char)*4);
+		strcpy(nombreTS[indiceActualTs], lexema);
+		strcpy(tipoTS[indiceActualTs], tipo);
+		strcpy(valorTS[indiceActualTs], valor);
+		longitudTS[indiceActualTs] = longitud;
+		indiceActualTs++;
+	} else if (verificacion == 1) {
+		printf("Variable declarada con dos tipos diferentes");
+		exit(1);
+	}
+
+   
    return 0;
+}
+
+/*
+	devuelve 0 si es valido, 1 si el nombre ya existe pero es de otro tipo y 2 si no existe
+*/
+int verificarEnTablaDeSimbolos(char* lexema, char* tipo) {
+
+	int i = 0;
+
+	while (i < indiceActualTs) {
+		if (strcmp(lexema, nombreTS[i]) == 0) {
+			if (strcmp(tipo, tipoTS[i]) == 0) {
+				return 0;
+			} else {
+				return 1;
+			}
+		}
+		i++;
+	}
+
+	return 2;
+
 }
