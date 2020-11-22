@@ -371,6 +371,8 @@ void generarAssembler(int pos){
 			if(strcmp ("=",polacaVec[i]) == 0){
 				es_operador = 1;
 				cont_aux = pos1 - cont_aux;
+				pila[pos1] = "fstp";
+				strcat(pila[pos1],polacaVec[cont_aux]);
 			}			
 			
 			if(es_operador == 0){
