@@ -409,9 +409,9 @@ void generarAssembler(int pos){
 		
 		if(es_operador == 0 ){
 			if(atoi(polacaVec[i]) != 0){ 
-				fprintf(asm1,"_%s\n",polacaVec[i]);
+				fprintf(asm1,"fld _%s\n",polacaVec[i]);
 			}else{ 
-				fprintf(asm1,"%s\n",polacaVec[i]);	
+				fprintf(asm1,"fld %s\n",polacaVec[i]);	
 			}
 		}
 		es_operador = 0;
