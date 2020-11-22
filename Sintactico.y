@@ -355,10 +355,13 @@ char* invertirCondicion(char* condicion) {
 }
 
 void generarAssembler(int pos){
-	int pos1 = 0,i,cont_aux=0,tamanioDePocala = 2000,es_operador=0 ;
-	char **pila = malloc(tamanioDePocala * sizeof(*pila));
+	int i,es_operador=0 ;
 	FILE *asm1;
 	asm1 = fopen("assembler.asm", "w");
+	if(asm1 == NULL){
+		printf("Error al generar el asembler \n");
+		exit(1);
+	}
 	fprintf(asm1, "include macros2.asm\n");
 	fprintf(asm1, "include number.asm\n");
 	fprintf(asm1, ".MODEL	LARGE \n");
@@ -375,8 +378,6 @@ void generarAssembler(int pos){
     fprintf(asm1, "\t FNINIT \n");;
     fprintf(asm1, "\n");	 
 	for( i=0; i < pos;i++){
-		//pila[pos1] = malloc(sizeof(char)*4);
-		
 		if(strcmp(polacaVec[i], "BI")==0 ||   strcmp(polacaVec[i], "BNE")==0 || strcmp(polacaVec[i], "BLE") == 0 ||strcmp(polacaVec[i], "BGT") == 0 || strcmp(polacaVec[i], "BGE") == 0 || strcmp(polacaVec[i], "BLT") == 0){
 			fprintf(asm1,"%s ",polacaVec[i]);
 			i++;
