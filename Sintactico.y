@@ -128,19 +128,19 @@ sentencia:
 	|GET ID CIERRE_SENT			{polaca("GET"); polaca($2); printf("\n\t\tGET ID es sentencia.\n");}
 	;
 declaracion: 
-	DIM CMP_ME lista_variables CMP_MA AS CMP_ME lista_tipos CMP_MA 		{actualizarTS();printf("\n\t\tUNA DECLARACION\n");}
+	DIM CMP_ME lista_variables CMP_MA AS CMP_ME lista_tipos CMP_MA 		{printf("\n\t\tUNA DECLARACION\n");}
 	;
 lista_variables:
-	lista_variables COMA ID 		{printf("\n\t\tlista_variables,ID es lista_variables\n");apilar(ptrVariables, $3); contadorVar++;}
-	|ID 							{printf("\n\t\tlista_variables es ID.\n");apilar(ptrVariables, $1); contadorVar++;}
+	lista_variables COMA ID 		{printf("\n\t\tlista_variables,ID es lista_variables\n");}
+	|ID 							{printf("\n\t\tlista_variables es ID.\n");}
 	;
 lista_tipos:
-	lista_tipos COMA REAL 			{printf("\n\t\tlista_tipos,REAL es lista_tipos\n");apilar(ptrTipos, "real"); contadorTipos++;}
-	|lista_tipos COMA INTEGER 		{printf("\n\t\tlista_tipos,INTEGER es lista_tipos\n");apilar(ptrTipos, "int"); contadorTipos++;}
-	|lista_tipos COMA STRING 		{printf("\n\t\tlista_tipos,STRING es lista_tipos\n");apilar(ptrTipos, "string"); contadorTipos++;}
-	|REAL 							{printf("\n\t\tlista_tipos es REAL\n");apilar(ptrTipos, "real"); contadorTipos++;}
-	|INTEGER 						{printf("\n\t\tlista_tipos es INTEGER\n");apilar(ptrTipos, "int"); contadorTipos++;}
-	|STRING 						{printf("\n\t\tlista_tipos es STRING\n");apilar(ptrTipos, "string"); contadorTipos++;}	
+	lista_tipos COMA REAL 			{printf("\n\t\tlista_tipos,REAL es lista_tipos\n");}
+	|lista_tipos COMA INTEGER 		{printf("\n\t\tlista_tipos,INTEGER es lista_tipos\n");}
+	|lista_tipos COMA STRING 		{printf("\n\t\tlista_tipos,STRING es lista_tipos\n");}
+	|REAL 							{printf("\n\t\tlista_tipos es REAL\n");}
+	|INTEGER 						{printf("\n\t\tlista_tipos es INTEGER\n");}
+	|STRING 						{printf("\n\t\tlista_tipos es STRING\n");}	
 	;
 seleccion:
 	IF_C PAR_A condicion PAR_C LLAVE_A 
@@ -358,25 +358,27 @@ void generarAssembler(int pos){
 	int i,es_operador=0 ;
 	FILE *asm1;
 	asm1 = fopen("assembler.asm", "w");
-	if(asm1 == NULL){
+	if(asm1  == NULL){
 		printf("Error al generar el asembler \n");
 		exit(1);
 	}
-	fprintf(asm1, "include macros2.asm\n");
-	fprintf(asm1, "include number.asm\n");
+	fprintf(asm1, "include macros2.asm %s\n",polacaVec[0]);
+	fprintf(asm1, "include number.asm\n"," ");
 	fprintf(asm1, ".MODEL	LARGE \n");
 	fprintf(asm1, ".386\n");
 	fprintf(asm1, ".STACK 200h \n");
-	 
+	
+	
 	fprintf(asm1, ".CODE \n");
 	fprintf(asm1, "MAIN:\n");
 	fprintf(asm1, "\n");	 
     fprintf(asm1, "\n");
     fprintf(asm1, "\t MOV AX,@DATA 	;inicializa el segmento de datos\n");
     fprintf(asm1, "\t MOV DS,AX \n");
-    fprintf(asm1, "\t MOV ES,AX \n");
-    fprintf(asm1, "\t FNINIT \n");;
-    fprintf(asm1, "\n");	 
+    fprintf(asm1, "\t MOV ES,AX \n"," ");
+    fprintf(asm1, "\t FNINIT \n");
+    fprintf(asm1, "\n");
+	
 	for( i=0; i < pos;i++){
 		if(strcmp(polacaVec[i], "BI")==0 ||   strcmp(polacaVec[i], "BNE")==0 || strcmp(polacaVec[i], "BLE") == 0 ||strcmp(polacaVec[i], "BGT") == 0 || strcmp(polacaVec[i], "BGE") == 0 || strcmp(polacaVec[i], "BLT") == 0){
 			fprintf(asm1,"%s ",polacaVec[i]);
@@ -416,7 +418,7 @@ void generarAssembler(int pos){
 		}
 		es_operador = 0;
 	}
-	fprintf(asm1, "\t mov AX, 4C00h \t ; Genera la interrupcion 21h\n");
+	fprintf(asm1, "\t mov AX, 4C00h \t ; Genera la interrupcion 21h %s\n","HOLAAA");
 	fprintf(asm1, "\t int 21h \t ; Genera la interrupcion 21h\n");
 	fprintf(asm1, "END MAIN\n");
 	fclose(asm1);
