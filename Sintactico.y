@@ -359,7 +359,21 @@ void generarAssembler(int pos){
 	char **pila = malloc(tamanioDePocala * sizeof(*pila));
 	FILE *asm1;
 	asm1 = fopen("assembler.asm", "w");
-
+	fprintf(asm1, "include macros2.asm\n");
+	fprintf(asm1, "include number.asm\n");
+	fprintf(asm1, ".MODEL	LARGE \n");
+	fprintf(asm1, ".386\n");
+	fprintf(asm1, ".STACK 200h \n");
+	 
+	fprintf(asm1, ".CODE \n");
+	fprintf(asm1, "MAIN:\n");
+	fprintf(asm1, "\n");	 
+    fprintf(asm1, "\n");
+    fprintf(asm1, "\t MOV AX,@DATA 	;inicializa el segmento de datos\n");
+    fprintf(asm1, "\t MOV DS,AX \n");
+    fprintf(asm1, "\t MOV ES,AX \n");
+    fprintf(asm1, "\t FNINIT \n");;
+    fprintf(asm1, "\n");	 
 	for( i=0; i < pos;i++){
 		//pila[pos1] = malloc(sizeof(char)*4);
 		
@@ -401,6 +415,9 @@ void generarAssembler(int pos){
 		}
 		es_operador = 0;
 	}
+	fprintf(asm1, "\t mov AX, 4C00h \t ; Genera la interrupcion 21h\n");
+	fprintf(asm1, "\t int 21h \t ; Genera la interrupcion 21h\n");
+	fprintf(asm1, "END MAIN\n");
 	fclose(asm1);
 	
 }
