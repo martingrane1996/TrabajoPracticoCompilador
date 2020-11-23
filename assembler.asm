@@ -12,36 +12,48 @@ MAIN:
 	 MOV ES,AX 
 	 FNINIT 
 
-fld _0
-fstp a
-ETIQ_3
+fld 0
+fstp @contador
 fld _5
-fld a
+fstp @aux-contar_3
+fld @aux-contar
+fld _3
 CMP
-BGE ETIQ_30
-ETIQ_9
-fld _5
-fld b
-CMP
-BGE ETIQ_22
-fld _1
-fld c
+BNE ETIQ_16
+fld 1
+fld @contador
 fadd
 fstp @aux0
 ffree
 fld @aux0
-fstp c
-BI ETIQ_9
-ETIQ_22
-fld _1
-fld a
+fstp @contador
+ETIQ_16
+fld @aux-contar
+fld _4
+CMP
+BNE ETIQ_27
+fld 1
+fld @contador
 fadd
 fstp @aux1
 ffree
 fld @aux1
+fstp @contador
+ETIQ_27
+fld @aux-contar
+fld _5
+CMP
+BNE ETIQ_38
+fld 1
+fld @contador
+fadd
+fstp @aux2
+ffree
+fld @aux2
+fstp @contador
+ETIQ_38
+fld @contador
 fstp a
-BI ETIQ_3
-ETIQ_30
 	 mov AX, 4C00h 	 ; Genera la interrupcion 21h HOLAAA
 	 int 21h 	 ; Genera la interrupcion 21h
 END MAIN

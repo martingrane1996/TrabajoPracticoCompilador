@@ -221,12 +221,12 @@ factor:
 	|contar 				{printf("\n\t\tcontar es factor\n");}
 	;
 contar:
-	CONTAR PAR_A{polaca("@contador");}  expresion {polaca("=");polaca("@aux-contar");} CIERRE_SENT CORCH_A el
+	CONTAR PAR_A{polaca("0"); polaca("="); polaca("@contador");}  expresion {polaca("=");polaca("@aux-contar");} CIERRE_SENT CORCH_A el
 	 CORCH_C PAR_C {polaca("@contador"); printf("\n\t\tfuncion contar\n");} 
 	;
 el:
 	el COMA factor {
-		polaca("@aux");
+		polaca("@aux-contar");
 		polaca("CMP");
 		polaca("BNE");
 		avanzar(); 
@@ -240,7 +240,7 @@ el:
 	} 
 	|factor {
 	
-		polaca("@aux");
+		polaca("@aux-contar");
 		polaca("CMP");
 		polaca("BNE");
 		apilar(ptrContar, indiceActual); 
