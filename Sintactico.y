@@ -58,8 +58,8 @@
 	void actualizarTS();
     int buscarIndice(char* lexema);
 	int esConstante(char* lexema);
-	int insertarEtiqueta();
-	int insertarEtiquetaConIndice(int indice);
+	void insertarEtiqueta();
+	void insertarEtiquetaConIndice(int indice);
 %}
 
 %union {
@@ -134,19 +134,19 @@ programa:
 	bloque {printf("\n\t\tCompilacion exitosa\n"); guardarPolaca(); generarAssembler(indiceActual);}
 bloque:
 	bloque sentencia 			{printf("\n\t\tmas de una sentencia\n");}
-	|sentencia 				{printf("\n\t\tsentencia\n");}
+	|sentencia 					{printf("\n\t\tsentencia\n");}
 	
 	;
 sentencia:
-	asignacion 				{printf("\n\t\t  asig. es sentencia \n");}
-	|declaracion 				{printf("\n\t\t   declaracion es sentencia\n");}
-	|iteracion 				{printf("\n\t\t iteracion es sentencia\n");}
-	|seleccion 				{printf("\n\t\t seleccion  es sentencia\n");}
+	asignacion 						{printf("\n\t\t  asig. es sentencia \n");}
+	|declaracion 					{printf("\n\t\t   declaracion es sentencia\n");}
+	|iteracion 						{printf("\n\t\t iteracion es sentencia\n");}
+	|seleccion 						{printf("\n\t\t seleccion  es sentencia\n");}
 	|PUT CTE_STR CIERRE_SENT		{polaca("PUT"); polaca($2); printf("\n\t\timprimir cadenas es sentencia\n");}
 	|PUT CTE_INT CIERRE_SENT		{polaca("PUT"); polaca($2); printf("\n\t\timprimir INT es sentencia.\n");}
 	|PUT CTE_REAL CIERRE_SENT		{polaca("PUT"); polaca($2); printf("\n\t\timprimir REAL es sentencia.\n");}
-	|PUT ID CIERRE_SENT			{polaca("PUT"); polaca($2); printf("\n\t\timprimir ID es sentencia.\n");}
-	|GET ID CIERRE_SENT			{polaca("GET"); polaca($2); printf("\n\t\tGET ID es sentencia.\n");}
+	|PUT ID CIERRE_SENT				{polaca("PUT"); polaca($2); printf("\n\t\timprimir ID es sentencia.\n");}
+	|GET ID CIERRE_SENT				{polaca("GET"); polaca($2); printf("\n\t\tGET ID es sentencia.\n");}
 	;
 declaracion: 
     DIM CMP_ME lista_variables CMP_MA AS CMP_ME lista_tipos CMP_MA      {actualizarTS();printf("\n\t\tUNA DECLARACION\n");}
@@ -173,14 +173,18 @@ seleccion:
 	|IF_C  PAR_A condicion PAR_C sentencia 											{polacaNumericaConPos(indiceActual, desapilar(ptrCondicion));  insertarEtiqueta(); printf("\n\t\tIF CON UNA SENTENCIA\n");}
 	;
 iteracion:
-	WHILE_C {apilar(ptrWhile, indiceActual); polaca("ET");} PAR_A condicion PAR_C LLAVE_A 
+	WHILE_C {apilar(ptrWhile, indiceActual); insertarEtiqueta();} PAR_A condicion PAR_C LLAVE_A 
 	bloque {polaca("BI"); polacaNumericaConPos(indiceActual + 1, desapilar(ptrCondicion)); polacaNumerica(desapilar(ptrWhile));} 
-	LLAVE_C 		{printf("\n\t\twhile(condicion){bloque} es while\n");}
+	LLAVE_C 		{insertarEtiqueta();("\n\t\twhile(condicion){bloque} es while\n");}
 	;
 condicion:	
-	comparacion CMP_AND {polaca($1); apilar(ptrCondicion, indiceActual); avanzar();} comparacion 		{polacaNumericaConPos(indiceActual, desapilar(ptrCondicion)); insertarEtiqueta(); polaca(invertirCondicion($1)); polacaNumerica(indiceActual + 3); polaca("BI"); apilar(ptrCondicion, indiceActual); avanzar();printf("\n\t\tcomparacion AND comparacion  es condicion\n");}
-	|comparacion CMP_OR {polaca(invertirCondicion($1)); apilar(ptrCondicion, indiceActual); avanzar();} comparacion 		{polaca($1); polacaNumericaConPos(indiceActual, desapilar(ptrCondicion)); insertarEtiqueta(); apilar(ptrCondicion, indiceActual); avanzar(); printf("\n\t\tcomparacion OR comparacion  es condicion\n");}
+	comparacion CMP_AND {polaca($1); apilar(ptrCondicion, indiceActual); avanzar();} comparacion 		{polacaNumericaConPos(indiceActual, desapilar(ptrCondicion)); polaca(invertirCondicion($1)); polacaNumerica(indiceActual + 3); insertarEtiquetaConIndice(indiceActual - 2); polaca("BI"); apilar(ptrCondicion, indiceActual); avanzar(); insertarEtiquetaConIndice(indiceActual - 1);
+	printf("\n\t\tcomparacion AND comparacion  es condicion\n");}
+
+	|comparacion CMP_OR {polaca(invertirCondicion($1)); apilar(ptrCondicion, indiceActual); avanzar();} comparacion 		{polaca($1); polacaNumericaConPos(indiceActual, desapilar(ptrCondicion)); apilar(ptrCondicion, indiceActual); avanzar(); insertarEtiquetaConIndice(indiceActual - 1); printf("\n\t\tcomparacion OR comparacion  es condicion\n");}
+
 	|comparacion 							{polaca($1); apilar(ptrCondicion, indiceActual); avanzar(); printf("\n\t\tcomparacion es condicion\n");}
+	
 	|CMP_NOT PAR_A comparacion PAR_C 		{polaca(invertirCondicion($3)); apilar(ptrCondicion, indiceActual); avanzar(); printf("\n\t\tcomparacion negada es condicion\n");}
 	;
 comparacion:
@@ -425,6 +429,8 @@ void generarAssembler(int pos){
 
 	for(i = 0; i < pos; i++){
 		if (strcmp(polacaVec[i], "CMP") == 0) {
+			// ffree
+
 			for (int a = 0; a < 2 ; a++) {
 				ASMVec[ASMIndex] = malloc(sizeof(char)*10);
 				char* operando = desapilar(ptrASM);
@@ -679,11 +685,11 @@ int esConstante(char* lexema) {
 	return 0;
 }
 
-int insertarEtiqueta() {
+void insertarEtiqueta() {
 	insertarEtiquetaConIndice(indiceActual);
 }
 
-int insertarEtiquetaConIndice(int indice) {
+void insertarEtiquetaConIndice(int indice) {
 	char *aux_str=malloc(sizeof(char)*4); 
 	sprintf(aux_str, "ETIQ_%d", indice);
 	polaca(aux_str);

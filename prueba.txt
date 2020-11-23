@@ -1,5 +1,10 @@
-if (a < 5 and b < 6) {
-	a : 45;
+a : 0;
+
+while (a < 5) {
+	while (b < 5) {
+		c : c + 1;	
+	}
+	a : a + 1;
 }
 
-b: 234;
+PUT a;

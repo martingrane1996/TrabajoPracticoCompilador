@@ -1,4 +1,4 @@
-include macros2.asm a
+include macros2.asm 0
 include number.asm
 .MODEL	LARGE 
 .386
@@ -12,21 +12,36 @@ MAIN:
 	 MOV ES,AX 
 	 FNINIT 
 
+fld _0
+fstp a
+ETIQ_3
 fld _5
 fld a
 CMP
-BGE ETIQ_8
-fld _6
+BGE ETIQ_30
+ETIQ_9
+fld _5
 fld b
 CMP
-ETIQ_8
-BLT ETIQ_13
-BI ETIQ_16
-fld _45
+BGE ETIQ_22
+fld _1
+fld c
+fadd
+fstp @aux0
+ffree
+fld @aux0
+fstp c
+BI ETIQ_9
+ETIQ_22
+fld _1
+fld a
+fadd
+fstp @aux1
+ffree
+fld @aux1
 fstp a
-ETIQ_16
-fld _234
-fstp b
+BI ETIQ_3
+ETIQ_30
 	 mov AX, 4C00h 	 ; Genera la interrupcion 21h HOLAAA
 	 int 21h 	 ; Genera la interrupcion 21h
 END MAIN
