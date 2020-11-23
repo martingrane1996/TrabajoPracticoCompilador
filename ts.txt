@@ -1,1 +1,7 @@
 Nombre                        	Tipo           	Valor          	Longitud       
+a                             	               	               	0              
+5                             	int            	5              	1              
+b                             	               	               	0              
+6                             	int            	6              	1              
+45                            	int            	45             	2              
+234                           	int            	234            	3              

@@ -57,7 +57,9 @@
 	char *str;
 	void actualizarTS();
     int buscarIndice(char* lexema);
-
+	int esConstante(char* lexema);
+	int insertarEtiqueta();
+	int insertarEtiquetaConIndice(int indice);
 %}
 
 %union {
@@ -164,11 +166,11 @@ lista_tipos:
 seleccion:
 	IF_C PAR_A condicion PAR_C LLAVE_A 
 	bloque 
-	LLAVE_C {polaca("BI"); polacaNumericaConPos(indiceActual + 1, desapilar(ptrCondicion)); apilar(ptrIf, indiceActual); avanzar();} ELSE LLAVE_A bloque LLAVE_C 	{printf("\n\t\tIF CON ELSE\n"); polacaNumericaConPos(indiceActual, desapilar(ptrIf));}
+	LLAVE_C {polaca("BI"); polacaNumericaConPos(indiceActual, desapilar(ptrCondicion)); apilar(ptrIf, indiceActual); avanzar(); insertarEtiquetaConIndice(indiceActual - 1);} ELSE LLAVE_A bloque LLAVE_C 	{printf("\n\t\tIF CON ELSE\n"); polacaNumericaConPos(indiceActual, desapilar(ptrIf)); insertarEtiqueta();}
 
 
-	|IF_C  PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C 							{polacaNumericaConPos(indiceActual, desapilar(ptrCondicion)); printf("\n\t\tIF SIN ELSE\n");} 
-	|IF_C  PAR_A condicion PAR_C sentencia 											{polacaNumericaConPos(indiceActual, desapilar(ptrCondicion)); printf("\n\t\tIF CON UNA SENTENCIA\n");}
+	|IF_C  PAR_A condicion PAR_C LLAVE_A bloque LLAVE_C 							{polacaNumericaConPos(indiceActual, desapilar(ptrCondicion)); insertarEtiqueta(); printf("\n\t\tIF SIN ELSE\n");} 
+	|IF_C  PAR_A condicion PAR_C sentencia 											{polacaNumericaConPos(indiceActual, desapilar(ptrCondicion));  insertarEtiqueta(); printf("\n\t\tIF CON UNA SENTENCIA\n");}
 	;
 iteracion:
 	WHILE_C {apilar(ptrWhile, indiceActual); polaca("ET");} PAR_A condicion PAR_C LLAVE_A 
@@ -176,8 +178,8 @@ iteracion:
 	LLAVE_C 		{printf("\n\t\twhile(condicion){bloque} es while\n");}
 	;
 condicion:	
-	comparacion CMP_AND {polaca($1); apilar(ptrCondicion, indiceActual); avanzar();} comparacion 		{polacaNumericaConPos(indiceActual + 2, desapilar(ptrCondicion)); polaca(invertirCondicion($1)); polacaNumerica(indiceActual + 3); polaca("BI"); apilar(ptrCondicion, indiceActual); avanzar();printf("\n\t\tcomparacion AND comparacion  es condicion\n");}
-	|comparacion CMP_OR {polaca(invertirCondicion($1)); apilar(ptrCondicion, indiceActual); avanzar();} comparacion 		{polaca($1); polacaNumericaConPos(indiceActual + 1, desapilar(ptrCondicion)); apilar(ptrCondicion, indiceActual); avanzar(); printf("\n\t\tcomparacion OR comparacion  es condicion\n");}
+	comparacion CMP_AND {polaca($1); apilar(ptrCondicion, indiceActual); avanzar();} comparacion 		{polacaNumericaConPos(indiceActual, desapilar(ptrCondicion)); insertarEtiqueta(); polaca(invertirCondicion($1)); polacaNumerica(indiceActual + 3); polaca("BI"); apilar(ptrCondicion, indiceActual); avanzar();printf("\n\t\tcomparacion AND comparacion  es condicion\n");}
+	|comparacion CMP_OR {polaca(invertirCondicion($1)); apilar(ptrCondicion, indiceActual); avanzar();} comparacion 		{polaca($1); polacaNumericaConPos(indiceActual, desapilar(ptrCondicion)); insertarEtiqueta(); apilar(ptrCondicion, indiceActual); avanzar(); printf("\n\t\tcomparacion OR comparacion  es condicion\n");}
 	|comparacion 							{polaca($1); apilar(ptrCondicion, indiceActual); avanzar(); printf("\n\t\tcomparacion es condicion\n");}
 	|CMP_NOT PAR_A comparacion PAR_C 		{polaca(invertirCondicion($3)); apilar(ptrCondicion, indiceActual); avanzar(); printf("\n\t\tcomparacion negada es condicion\n");}
 	;
@@ -215,7 +217,7 @@ factor:
 	|contar 				{printf("\n\t\tcontar es factor\n");}
 	;
 contar:
-	CONTAR PAR_A{polaca("@contador");}  expresion {polaca("=");polaca("@aux");} CIERRE_SENT CORCH_A el
+	CONTAR PAR_A{polaca("@contador");}  expresion {polaca("=");polaca("@aux-contar");} CIERRE_SENT CORCH_A el
 	 CORCH_C PAR_C {polaca("@contador"); printf("\n\t\tfuncion contar\n");} 
 	;
 el:
@@ -412,46 +414,214 @@ void generarAssembler(int pos){
     fprintf(asm1, "\t MOV ES,AX \n");
     fprintf(asm1, "\t FNINIT \n");
     fprintf(asm1, "\n");
+
+	char** pilaASM[50];
+	char** ptrASM;
+	ptrASM = pilaASM;
 	
-	for( i=0; i < pos;i++){
-		if(strcmp(polacaVec[i], "BI")==0 ||   strcmp(polacaVec[i], "BNE")==0 || strcmp(polacaVec[i], "BLE") == 0 ||strcmp(polacaVec[i], "BGT") == 0 || strcmp(polacaVec[i], "BGE") == 0 || strcmp(polacaVec[i], "BLT") == 0){
-			fprintf(asm1,"%s ",polacaVec[i]);
-			i++;
-			fprintf(asm1,"%s\n",polacaVec[i]);
+	char** ASMVec = malloc(tamanioDePocala * 4 * sizeof(char));
+	int ASMIndex = 0;
+	int operandosAux = 0;
+
+	for(i = 0; i < pos; i++){
+		if (strcmp(polacaVec[i], "CMP") == 0) {
+			for (int a = 0; a < 2 ; a++) {
+				ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+				char* operando = desapilar(ptrASM);
+				if (esConstante(operando)) {
+					sprintf(ASMVec[ASMIndex], "fld _%s", operando);
+				} else {
+					sprintf(ASMVec[ASMIndex], "fld %s", operando);
+				}
+				ASMIndex++;
+			}
+
+			ASMVec[ASMIndex] = polacaVec[i];
+			ASMIndex++;
+
 			es_operador =1;
-		}		
-		
-		if(strcmp ("+",polacaVec[i]) == 0){
+
+		} else if (strstr(polacaVec[i], "ETIQ_") != NULL) {
+			ASMVec[ASMIndex] = polacaVec[i];
+			ASMIndex++;
+			es_operador =1;
+		} else if(strcmp(polacaVec[i], "BI") == 0 || strcmp(polacaVec[i], "BNE") == 0 || strcmp(polacaVec[i], "BLE") == 0 || strcmp(polacaVec[i], "BGT") == 0 || strcmp(polacaVec[i], "BGE") == 0 || strcmp(polacaVec[i], "BLT") == 0){
+
+			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+			sprintf(ASMVec[ASMIndex], "%s %s", polacaVec[i], polacaVec[i + 1]);
+			ASMIndex++;
+			es_operador =1;
+			i++;
+			
+		} else if(strcmp ("+", polacaVec[i]) == 0){
+
+			// OPERACION 
 			es_operador = 1;
-			fprintf(asm1,"%s\n","fadd");
-		}
-		if(strcmp ("*",polacaVec[i]) == 0){
+
+			for (int a = 0; a < 2 ; a++) {
+				ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+				char* operando = desapilar(ptrASM);
+				if (esConstante(operando)) {
+					sprintf(ASMVec[ASMIndex], "fld _%s", operando);
+				} else {
+					sprintf(ASMVec[ASMIndex], "fld %s", operando);
+				}
+				ASMIndex++;
+			}
+
+			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+			ASMVec[ASMIndex] = "fadd";
+			ASMIndex++;
+
+			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+			char* var = malloc(sizeof(char)*10);
+			sprintf(var, "@aux%d", operandosAux);
+			sprintf(ASMVec[ASMIndex], "fstp %s", var);
+			ASMIndex++;
+
+			operandosAux++;
+			apilar(ptrASM, var);
+
+			ASMVec[ASMIndex] = "ffree";
+			ASMIndex++;
+			// OPERACION 
+
+		} else if(strcmp ("*",polacaVec[i]) == 0){
+			
+			// OPERACION 
 			es_operador = 1;
-			fprintf(asm1,"%s\n","fmul");
-		}
-		if(strcmp ("/",polacaVec[i]) == 0){
+
+			for (int a = 0; a < 2 ; a++) {
+				ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+				char* operando = desapilar(ptrASM);
+				if (esConstante(operando)) {
+					sprintf(ASMVec[ASMIndex], "fld _%s", operando);
+				} else {
+					sprintf(ASMVec[ASMIndex], "fld %s", operando);
+				}
+				ASMIndex++;
+			}
+
+			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+			ASMVec[ASMIndex] = "fmul";
+			ASMIndex++;
+
+			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+			char* var = malloc(sizeof(char)*10);
+			sprintf(var, "@aux%d", operandosAux);
+			sprintf(ASMVec[ASMIndex], "fstp %s", var);
+			ASMIndex++;
+
+			operandosAux++;
+			apilar(ptrASM, var);
+
+			ASMVec[ASMIndex] = "ffree";
+			ASMIndex++;
+			// OPERACION 
+
+		} else if(strcmp ("/",polacaVec[i]) == 0){
+			
+			// OPERACION 
 			es_operador = 1;
-			fprintf(asm1,"%s\n","fdiv");
-		}
-		if(strcmp ("-",polacaVec[i]) == 0){
+
+			for (int a = 0; a < 2 ; a++) {
+				ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+				char* operando = desapilar(ptrASM);
+				if (esConstante(operando)) {
+					sprintf(ASMVec[ASMIndex], "fld _%s", operando);
+				} else {
+					sprintf(ASMVec[ASMIndex], "fld %s", operando);
+				}
+				ASMIndex++;
+			}
+
+			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+			ASMVec[ASMIndex] = "fdiv";
+			ASMIndex++;
+
+			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+			char* var = malloc(sizeof(char)*10);
+			sprintf(var, "@aux%d", operandosAux);
+			sprintf(ASMVec[ASMIndex], "fstp %s", var);
+			ASMIndex++;
+
+			operandosAux++;
+			apilar(ptrASM, var);
+
+			ASMVec[ASMIndex] = "ffree";
+			ASMIndex++;
+			// OPERACION 
+
+		} else if(strcmp ("-",polacaVec[i]) == 0){
+			
+			// OPERACION 
 			es_operador = 1;
-			fprintf(asm1,"%s\n","fdif");
-		}
-		if(strcmp ("=",polacaVec[i]) == 0){
+
+			for (int a = 0; a < 2 ; a++) {
+				ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+				char* operando = desapilar(ptrASM);
+				if (esConstante(operando)) {
+					sprintf(ASMVec[ASMIndex], "fld _%s", operando);
+				} else {
+					sprintf(ASMVec[ASMIndex], "fld %s", operando);
+				}
+				ASMIndex++;
+			}
+
+			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+			ASMVec[ASMIndex] = "fdif";
+			ASMIndex++;
+
+			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+			char* var = malloc(sizeof(char)*10);
+			sprintf(var, "@aux%d", operandosAux);
+			sprintf(ASMVec[ASMIndex], "fstp %s", var);
+			ASMIndex++;
+
+			operandosAux++;
+			apilar(ptrASM, var);
+
+			ASMVec[ASMIndex] = "ffree";
+			ASMIndex++;
+			// OPERACION 
+
+		} else if(strcmp ("=",polacaVec[i]) == 0){
 			es_operador = 1;
 			i++;
-			fprintf(asm1,"fstp %s\n",polacaVec[i]);
+
+			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+			char* operando = desapilar(ptrASM);
+			if (esConstante(operando)) {
+				sprintf(ASMVec[ASMIndex], "fld _%s", operando);
+			} else {
+				sprintf(ASMVec[ASMIndex], "fld %s", operando);
+			}
+			ASMIndex++;
+			
+			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+			sprintf(ASMVec[ASMIndex], "fstp %s", polacaVec[i]);
+			ASMIndex++;
 		}		
 		
-		if(es_operador == 0 ){
-			if(atoi(polacaVec[i]) != 0){ 
-				fprintf(asm1,"fld _%s\n",polacaVec[i]);
+		if(es_operador == 0){
+			if(esConstante(polacaVec[i])){ 
+				char* var = malloc(sizeof(char)*10);
+				sprintf(var, "_%s", polacaVec[i]);
+				apilar(ptrASM, var);
 			}else{ 
-				fprintf(asm1,"fld %s\n",polacaVec[i]);	
+				apilar(ptrASM, polacaVec[i]);
 			}
 		}
 		es_operador = 0;
 	}
+
+
+	for (int a = 0; a < ASMIndex; a++) {
+		fprintf(asm1, "%s\n", ASMVec[a]);
+	}
+
+	//
+
 	fprintf(asm1, "\t mov AX, 4C00h \t ; Genera la interrupcion 21h %s\n","HOLAAA");
 	fprintf(asm1, "\t int 21h \t ; Genera la interrupcion 21h\n");
 	fprintf(asm1, "END MAIN\n");
@@ -490,4 +660,31 @@ int buscarIndice(char* lexema) {
 
     printf("Elemento no encontrado en tabla de simbolos");
     exit(1);
+}
+
+
+int esConstante(char* lexema) {
+    int i = 0;
+
+    while (i < indiceActualTs) {
+        if (strcmp(lexema, nombreTS[i]) == 0) {
+			if (strcmp("", valorTS[i]) != 0) {
+				return 1;
+			} else {
+				return 0;
+			}
+        }
+        i++;
+    }
+	return 0;
+}
+
+int insertarEtiqueta() {
+	insertarEtiquetaConIndice(indiceActual);
+}
+
+int insertarEtiquetaConIndice(int indice) {
+	char *aux_str=malloc(sizeof(char)*4); 
+	sprintf(aux_str, "ETIQ_%d", indice);
+	polaca(aux_str);
 }
