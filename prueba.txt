@@ -1,10 +1,1 @@
-a : 0;
-
-while (a < 5) {
-	while (b < 5) {
-		c : c + 1;	
-	}
-	a : a + 1;
-}
-
-PUT a;
+a : contar(5;[3,4,5]);
