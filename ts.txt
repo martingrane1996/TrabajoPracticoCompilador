@@ -1,9 +1,36 @@
 Nombre                        	Tipo           	Valor          	Longitud       
-a                             	               	               	0              
-5                             	int            	5              	1              
-b                             	               	               	0              
-6                             	int            	6              	1              
-4.5                           	real           	4.5            	3              
-"i"                           	string         	"i"            	3              
-234                           	int            	234            	3              
-o                             	               	               	0              
+contador                      	int            	               	0              
+promedio                      	real           	               	0              
+actual                        	real           	               	0              
+suma                          	real           	               	0              
+String1                       	string         	"String1"      	9              
+String2                       	string         	"String2"      	9              
+0                             	int            	0              	1              
+02_5                          	real           	02.5           	4              
+0xA2B0                        	hex            	0xA2B0         	6              
+92                            	int            	92             	2              
+1                             	int            	1              	1              
+0_342                         	real           	0.342          	5              
+@contador                     	real           	               	0              
+_0                            	real           	0.0            	3              
+_1                            	real           	1.0            	3              
+@aux_contar                   	real           	               	0              
+256                           	int            	256            	3              
+0b10                          	bin            	0b10           	4              
+52                            	int            	52             	2              
+4                             	int            	4              	1              
+String3                       	string         	"String3"      	9              
+String4                       	string         	"String4"      	9              
+0b111010                      	bin            	0b111010       	8              
+String5                       	string         	"String5"      	9              
+@aux0                         	real           	               	0              
+@aux1                         	real           	               	0              
+@aux2                         	real           	               	0              
+@aux3                         	real           	               	0              
+@aux4                         	real           	               	0              
+@aux5                         	real           	               	0              
+@aux6                         	real           	               	0              
+@aux7                         	real           	               	0              
+@aux8                         	real           	               	0              
+@aux9                         	real           	               	0              
+@aux10                        	real           	               	0              

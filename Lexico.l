@@ -19,6 +19,7 @@
 	int indiceActualTs;
 
 	void removerComillas(char* str);
+	char* reemplazarCaracter(char* str, char c, char r);
 %}
 
 %option noyywrap
@@ -139,8 +140,11 @@ WHILE_C 	"while"|"WHILE"|"While"
 					}
 
 					printf ("\nDetecto CTE_REAL ' %s ' en linea %d\n",yytext,yylineno);
-					insertarEnTablaDeSimbolos(yytext, "real", yytext, strlen(yytext));
-					yylval.real=strdup(yytext);
+					char* sinPuntos = malloc(sizeof(char) * 30);
+					strcpy(sinPuntos, yytext);
+					sinPuntos = reemplazarCaracter(sinPuntos, '.', '_');
+					insertarEnTablaDeSimbolos(sinPuntos, "real", yytext, strlen(yytext));
+					yylval.real=strdup(sinPuntos);
 					return (CTE_REAL);
 				}
 {CTE_STR}		{
@@ -252,4 +256,13 @@ void removerComillas(char* str) {
 
 	*pw = '\0';
 
+}
+
+char* reemplazarCaracter(char* str, char c, char r) {
+    char *current_pos = strchr(str,c);
+    while (current_pos){
+        *current_pos = r;
+        current_pos = strchr(current_pos, c);
+    }
+    return str;
 }

@@ -1,1 +1,21 @@
-a : contar(5;[3,4,5]);
+DIM < contador,promedio,actual,suma> AS < Integer,Float,Float,Float >
+PUT "String1";
+PUT "String2";
+GET actual;
+contador: 0;
+suma: 02.5+0xA2B0;
+while (contador <= 92) {
+	contador: contador + 1;
+	actual: (contador/0.342) + (contador* contar(actual*contador ; [256,0b10,52,4]));
+	suma: suma + actual;
+	}
+PUT "String3";
+PUT suma;
+if (actual > 0b10 and actual <> 0){
+	PUT "String4";
+}
+Else
+{
+	if (actual < 0b111010)
+		PUT "String5";
+}

@@ -425,7 +425,7 @@ void generarAssembler(int pos){
 		printf("Error al generar el asembler \n");
 		exit(1);
 	}
-	fprintf(asm1, "include macros2.asm %s\n",polacaVec[0]);
+	fprintf(asm1, "include macros2.asm\n");
 	fprintf(asm1, "include number.asm\n");
 	fprintf(asm1, "include macros.asm\n");
 	fprintf(asm1, ".MODEL	LARGE \n");
@@ -603,15 +603,17 @@ void generarAssembler(int pos){
 		if(esConstante(nombreTS[i])){ 
 			nombre = malloc(sizeof(char)*10);
 			sprintf(nombre, "_%s", nombreTS[i]);
+
+			if (strcmp(tipoTS[i], "int") == 0) {
+				sprintf(valor, "%s.0", valor);
+				longitud = strlen(valor);
+			}
 		} else {
 			nombre = nombreTS[i];
 			valor = "?";
 		}
 
-		if (strcmp(tipoTS[i], "int") == 0) {
-			sprintf(valor, "%s.0", valor);
-			longitud = strlen(valor);
-		}
+		
 
 		if (strcmp(tipoTS[i], "string") == 0 && esConstante(nombreTS[i])) {
 			fprintf(asm1, "%-30s\t%-15s\t%-15s,'$', %d dup (?)\n", nombre, "db", valor, longitud);
