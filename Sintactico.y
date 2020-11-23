@@ -60,6 +60,8 @@
 	int esConstante(char* lexema);
 	void insertarEtiqueta();
 	void insertarEtiquetaConIndice(int indice);
+	int insertarEnTablaDeSimbolos(char* lexema, char* tipo, char* valor, int longitud);
+	char* traducirCondicion(char* condicion);
 %}
 
 %union {
@@ -221,8 +223,8 @@ factor:
 	|contar 				{printf("\n\t\tcontar es factor\n");}
 	;
 contar:
-	CONTAR PAR_A{polaca("0"); polaca("="); polaca("@contador");}  expresion {polaca("=");polaca("@aux-contar");} CIERRE_SENT CORCH_A el
-	 CORCH_C PAR_C {polaca("@contador"); printf("\n\t\tfuncion contar\n");} 
+	CONTAR PAR_A{insertarEnTablaDeSimbolos("@contador", "real", "", 0); insertarEnTablaDeSimbolos("@aux-contar", "real", "", 0); polaca("0"); polaca("="); polaca("@contador");}  expresion {polaca("=");polaca("@aux-contar");} CIERRE_SENT CORCH_A el
+	CORCH_C PAR_C {polaca("@contador"); printf("\n\t\tfuncion contar\n");} 
 	;
 el:
 	el COMA factor {
@@ -362,10 +364,6 @@ void guardarPolaca() {
 		fprintf(intermedia, "%s\n", polacaVec[i]);	
 	} 
 
-	for (i = 0; i < indiceActualTs; i++) {
-        fprintf(tablaDeSimbolos, "%-30s\t%-15s\t%-15s\t%-15d\n", nombreTS[i], tipoTS[i], valorTS[i], longitudTS[i]);
-    }
-
 	fclose(intermedia);
 	
 }
@@ -394,6 +392,31 @@ char* invertirCondicion(char* condicion) {
 	}
 }
 
+
+char* traducirCondicion(char* condicion) {
+	if (strcmp(condicion, "BLT") == 0) {
+		return "JB";
+	}
+
+	if (strcmp(condicion, "BGE") == 0) {
+		return "JAE";
+	}
+
+	if (strcmp(condicion, "BGT") == 0) {
+		return "JA";
+	}
+
+	if (strcmp(condicion, "BLE") == 0) {
+		return "JNA";
+	}
+
+	if (strcmp(condicion, "BNE") == 0) {
+		return "JNE";
+	} else {
+		return "JE";
+	}
+}
+
 void generarAssembler(int pos){
 	int i,es_operador=0 ;
 	FILE *asm1;
@@ -407,25 +430,16 @@ void generarAssembler(int pos){
 	fprintf(asm1, ".MODEL	LARGE \n");
 	fprintf(asm1, ".386\n");
 	fprintf(asm1, ".STACK 200h \n");
-	
-	
-	fprintf(asm1, ".CODE \n");
-	fprintf(asm1, "MAIN:\n");
-	fprintf(asm1, "\n");	 
-    fprintf(asm1, "\n");
-    fprintf(asm1, "\t MOV AX,@DATA 	;inicializa el segmento de datos\n");
-    fprintf(asm1, "\t MOV DS,AX \n");
-    fprintf(asm1, "\t MOV ES,AX \n");
-    fprintf(asm1, "\t FNINIT \n");
-    fprintf(asm1, "\n");
 
-	char** pilaASM[50];
+
+	char* pilaASM[50];
 	char** ptrASM;
 	ptrASM = pilaASM;
 	
 	char** ASMVec = malloc(tamanioDePocala * 4 * sizeof(char));
 	int ASMIndex = 0;
 	int operandosAux = 0;
+	char* operacion;
 
 	for(i = 0; i < pos; i++){
 		if (strcmp(polacaVec[i], "CMP") == 0) {
@@ -442,7 +456,13 @@ void generarAssembler(int pos){
 				ASMIndex++;
 			}
 
-			ASMVec[ASMIndex] = polacaVec[i];
+			ASMVec[ASMIndex] = "fcomp";
+			ASMIndex++;
+
+			ASMVec[ASMIndex] = "fstsw ax";
+			ASMIndex++;
+
+			ASMVec[ASMIndex] = "sahf";
 			ASMIndex++;
 
 			es_operador =1;
@@ -454,7 +474,7 @@ void generarAssembler(int pos){
 		} else if(strcmp(polacaVec[i], "BI") == 0 || strcmp(polacaVec[i], "BNE") == 0 || strcmp(polacaVec[i], "BLE") == 0 || strcmp(polacaVec[i], "BGT") == 0 || strcmp(polacaVec[i], "BGE") == 0 || strcmp(polacaVec[i], "BLT") == 0){
 
 			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
-			sprintf(ASMVec[ASMIndex], "%s %s", polacaVec[i], polacaVec[i + 1]);
+			sprintf(ASMVec[ASMIndex], "%s %s", traducirCondicion(polacaVec[i]), polacaVec[i + 1]);
 			ASMIndex++;
 			es_operador =1;
 			i++;
@@ -462,133 +482,30 @@ void generarAssembler(int pos){
 		} else if(strcmp ("+", polacaVec[i]) == 0){
 
 			// OPERACION 
-			es_operador = 1;
+			es_operador = 2;
+			operacion = "fadd";
 
-			for (int a = 0; a < 2 ; a++) {
-				ASMVec[ASMIndex] = malloc(sizeof(char)*10);
-				char* operando = desapilar(ptrASM);
-				if (esConstante(operando)) {
-					sprintf(ASMVec[ASMIndex], "fld _%s", operando);
-				} else {
-					sprintf(ASMVec[ASMIndex], "fld %s", operando);
-				}
-				ASMIndex++;
-			}
-
-			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
-			ASMVec[ASMIndex] = "fadd";
-			ASMIndex++;
-
-			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
-			char* var = malloc(sizeof(char)*10);
-			sprintf(var, "@aux%d", operandosAux);
-			sprintf(ASMVec[ASMIndex], "fstp %s", var);
-			ASMIndex++;
-
-			operandosAux++;
-			apilar(ptrASM, var);
-
-			ASMVec[ASMIndex] = "ffree";
-			ASMIndex++;
 			// OPERACION 
 
 		} else if(strcmp ("*",polacaVec[i]) == 0){
 			
 			// OPERACION 
-			es_operador = 1;
-
-			for (int a = 0; a < 2 ; a++) {
-				ASMVec[ASMIndex] = malloc(sizeof(char)*10);
-				char* operando = desapilar(ptrASM);
-				if (esConstante(operando)) {
-					sprintf(ASMVec[ASMIndex], "fld _%s", operando);
-				} else {
-					sprintf(ASMVec[ASMIndex], "fld %s", operando);
-				}
-				ASMIndex++;
-			}
-
-			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
-			ASMVec[ASMIndex] = "fmul";
-			ASMIndex++;
-
-			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
-			char* var = malloc(sizeof(char)*10);
-			sprintf(var, "@aux%d", operandosAux);
-			sprintf(ASMVec[ASMIndex], "fstp %s", var);
-			ASMIndex++;
-
-			operandosAux++;
-			apilar(ptrASM, var);
-
-			ASMVec[ASMIndex] = "ffree";
-			ASMIndex++;
+			es_operador = 2;
+			operacion = "fmul";
 			// OPERACION 
 
 		} else if(strcmp ("/",polacaVec[i]) == 0){
 			
 			// OPERACION 
-			es_operador = 1;
-
-			for (int a = 0; a < 2 ; a++) {
-				ASMVec[ASMIndex] = malloc(sizeof(char)*10);
-				char* operando = desapilar(ptrASM);
-				if (esConstante(operando)) {
-					sprintf(ASMVec[ASMIndex], "fld _%s", operando);
-				} else {
-					sprintf(ASMVec[ASMIndex], "fld %s", operando);
-				}
-				ASMIndex++;
-			}
-
-			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
-			ASMVec[ASMIndex] = "fdiv";
-			ASMIndex++;
-
-			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
-			char* var = malloc(sizeof(char)*10);
-			sprintf(var, "@aux%d", operandosAux);
-			sprintf(ASMVec[ASMIndex], "fstp %s", var);
-			ASMIndex++;
-
-			operandosAux++;
-			apilar(ptrASM, var);
-
-			ASMVec[ASMIndex] = "ffree";
-			ASMIndex++;
+			es_operador = 2;
+			operacion = "fdiv";
 			// OPERACION 
 
 		} else if(strcmp ("-",polacaVec[i]) == 0){
 			
 			// OPERACION 
-			es_operador = 1;
-
-			for (int a = 0; a < 2 ; a++) {
-				ASMVec[ASMIndex] = malloc(sizeof(char)*10);
-				char* operando = desapilar(ptrASM);
-				if (esConstante(operando)) {
-					sprintf(ASMVec[ASMIndex], "fld _%s", operando);
-				} else {
-					sprintf(ASMVec[ASMIndex], "fld %s", operando);
-				}
-				ASMIndex++;
-			}
-
-			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
-			ASMVec[ASMIndex] = "fdif";
-			ASMIndex++;
-
-			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
-			char* var = malloc(sizeof(char)*10);
-			sprintf(var, "@aux%d", operandosAux);
-			sprintf(ASMVec[ASMIndex], "fstp %s", var);
-			ASMIndex++;
-
-			operandosAux++;
-			apilar(ptrASM, var);
-
-			ASMVec[ASMIndex] = "ffree";
-			ASMIndex++;
+			es_operador = 2;
+			operacion = "fdif";
 			// OPERACION 
 
 		} else if(strcmp ("=",polacaVec[i]) == 0){
@@ -617,18 +534,85 @@ void generarAssembler(int pos){
 			}else{ 
 				apilar(ptrASM, polacaVec[i]);
 			}
+		} else if (es_operador == 2) {
+
+			for (int a = 0; a < 2 ; a++) {
+				ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+				char* operando = desapilar(ptrASM);
+				if (esConstante(operando)) {
+					sprintf(ASMVec[ASMIndex], "fld _%s", operando);
+				} else {
+					sprintf(ASMVec[ASMIndex], "fld %s", operando);
+				}
+				ASMIndex++;
+			}
+
+			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+			ASMVec[ASMIndex] = operacion;
+			ASMIndex++;
+
+			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+			char* var = malloc(sizeof(char)*10);
+			sprintf(var, "@aux%d", operandosAux);
+			insertarEnTablaDeSimbolos(var, "real", "", 0);
+			sprintf(ASMVec[ASMIndex], "fstp %s", var);
+			ASMIndex++;
+
+			operandosAux++;
+			apilar(ptrASM, var);
+
+			ASMVec[ASMIndex] = "ffree";
+			ASMIndex++;
+
 		}
 		es_operador = 0;
 	}
 
 
+	// Guardo tabla de simbolos en archivo ts
+	for (i = 0; i < indiceActualTs; i++) {
+        fprintf(tablaDeSimbolos, "%-30s\t%-15s\t%-15s\t%-15d\n", nombreTS[i], tipoTS[i], valorTS[i], longitudTS[i]);
+    }
+
+	
+	fprintf(asm1, ".DATA \n\n");
+
+	for (i = 0; i < indiceActualTs; i++) {
+		char* valor = valorTS[i];
+		int longitud = longitudTS[i];
+		char* nombre;
+
+		if(esConstante(nombreTS[i])){ 
+			nombre = malloc(sizeof(char)*10);
+			sprintf(nombre, "_%s", nombreTS[i]);
+		} else {
+			nombre = nombreTS[i];
+		}
+
+		if (strcmp(tipoTS[i], "int") == 0) {
+			sprintf(valor, "%s.0", valor);
+			longitud = strlen(valor);
+		}
+
+        fprintf(asm1, "%-30s\t%-15s\t%-15s\t%-15d\n", nombre, "dd", valor, longitud);
+    }
+
+
+	fprintf(asm1, "\n.CODE \n");
+	fprintf(asm1, "MAIN:\n");
+	fprintf(asm1, "\n");	 
+    fprintf(asm1, "\n");
+    fprintf(asm1, "\t MOV AX,@DATA 	;inicializa el segmento de datos\n");
+    fprintf(asm1, "\t MOV DS,AX \n");
+    fprintf(asm1, "\t MOV ES,AX \n");
+    fprintf(asm1, "\t FNINIT \n");
+    fprintf(asm1, "\n");
+
 	for (int a = 0; a < ASMIndex; a++) {
 		fprintf(asm1, "%s\n", ASMVec[a]);
 	}
 
-	//
-
-	fprintf(asm1, "\t mov AX, 4C00h \t ; Genera la interrupcion 21h %s\n","HOLAAA");
+	fprintf(asm1, "\n\t mov AX, 4C00h \t ; Genera la interrupcion 21h %s\n","HOLAAA");
 	fprintf(asm1, "\t int 21h \t ; Genera la interrupcion 21h\n");
 	fprintf(asm1, "END MAIN\n");
 	fclose(asm1);
