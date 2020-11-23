@@ -177,7 +177,7 @@ seleccion:
 iteracion:
 	WHILE_C {apilar(ptrWhile, indiceActual); insertarEtiqueta();} PAR_A condicion PAR_C LLAVE_A 
 	bloque {polaca("BI"); polacaNumericaConPos(indiceActual + 1, desapilar(ptrCondicion)); polacaNumerica(desapilar(ptrWhile));} 
-	LLAVE_C 		{insertarEtiqueta();("\n\t\twhile(condicion){bloque} es while\n");}
+	LLAVE_C 		{insertarEtiqueta();printf("\n\t\twhile(condicion){bloque} es while\n");}
 	;
 condicion:	
 	comparacion CMP_AND {polaca($1); apilar(ptrCondicion, indiceActual); avanzar();} comparacion 		{polacaNumericaConPos(indiceActual, desapilar(ptrCondicion)); polaca(invertirCondicion($1)); polacaNumerica(indiceActual + 3); insertarEtiquetaConIndice(indiceActual - 2); polaca("BI"); apilar(ptrCondicion, indiceActual); avanzar(); insertarEtiquetaConIndice(indiceActual - 1);
@@ -223,12 +223,12 @@ factor:
 	|contar 				{printf("\n\t\tcontar es factor\n");}
 	;
 contar:
-	CONTAR PAR_A{insertarEnTablaDeSimbolos("@contador", "real", "", 0); insertarEnTablaDeSimbolos("@aux-contar", "real", "", 0); polaca("0"); polaca("="); polaca("@contador");}  expresion {polaca("=");polaca("@aux-contar");} CIERRE_SENT CORCH_A el
+	CONTAR PAR_A{insertarEnTablaDeSimbolos("@contador", "real", "", 0); insertarEnTablaDeSimbolos("_0", "real", "0.0", 3); insertarEnTablaDeSimbolos("_1", "real", "1.0", 3); insertarEnTablaDeSimbolos("@aux_contar", "real", "", 0); polaca("0"); polaca("="); polaca("@contador");}  expresion {polaca("=");polaca("@aux-contar");} CIERRE_SENT CORCH_A el
 	CORCH_C PAR_C {polaca("@contador"); printf("\n\t\tfuncion contar\n");} 
 	;
 el:
 	el COMA factor {
-		polaca("@aux-contar");
+		polaca("@aux_contar");
 		polaca("CMP");
 		polaca("BNE");
 		avanzar(); 
@@ -242,7 +242,7 @@ el:
 	} 
 	|factor {
 	
-		polaca("@aux-contar");
+		polaca("@aux_contar");
 		polaca("CMP");
 		polaca("BNE");
 		apilar(ptrContar, indiceActual); 
@@ -469,7 +469,8 @@ void generarAssembler(int pos){
 			es_operador =1;
 
 		} else if (strstr(polacaVec[i], "ETIQ_") != NULL) {
-			ASMVec[ASMIndex] = polacaVec[i];
+			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
+			sprintf(ASMVec[ASMIndex], "%s:", polacaVec[i]);
 			ASMIndex++;
 			es_operador =1;
 		} else if (strstr(polacaVec[i], "PUT") != NULL) {
@@ -521,7 +522,7 @@ void generarAssembler(int pos){
 			
 			// OPERACION 
 			es_operador = 2;
-			operacion = "fdif";
+			operacion = "fsub";
 			// OPERACION 
 
 		} else if(strcmp ("=",polacaVec[i]) == 0){
@@ -530,6 +531,7 @@ void generarAssembler(int pos){
 
 			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
 			char* operando = desapilar(ptrASM);
+
 			if (esConstante(operando)) {
 				sprintf(ASMVec[ASMIndex], "fld _%s", operando);
 			} else {
@@ -603,6 +605,7 @@ void generarAssembler(int pos){
 			sprintf(nombre, "_%s", nombreTS[i]);
 		} else {
 			nombre = nombreTS[i];
+			valor = "?";
 		}
 
 		if (strcmp(tipoTS[i], "int") == 0) {
@@ -610,7 +613,11 @@ void generarAssembler(int pos){
 			longitud = strlen(valor);
 		}
 
-        fprintf(asm1, "%-30s\t%-15s\t%-15s\t%-15d\n", nombre, "dd", valor, longitud);
+		if (strcmp(tipoTS[i], "string") == 0 && esConstante(nombreTS[i])) {
+			fprintf(asm1, "%-30s\t%-15s\t%-15s,'$', %d dup (?)\n", nombre, "db", valor, longitud);
+		} else {
+			fprintf(asm1, "%-30s\t%-15s\t%-15s\n", nombre, "dd", valor);
+		}
     }
 
 

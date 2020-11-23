@@ -18,6 +18,7 @@
 	int* longitudTS;
 	int indiceActualTs;
 
+	void removerComillas(char* str);
 %}
 
 %option noyywrap
@@ -149,8 +150,11 @@ WHILE_C 	"while"|"WHILE"|"While"
 					}
 
 					printf ("\nDetecto CTE_STR ' %s ' en linea %d\n",yytext,yylineno);
-					insertarEnTablaDeSimbolos(yytext, "string", yytext, strlen(yytext));
-					yylval.string=strdup(yytext);
+					char* sinComillas = malloc(sizeof(char) * 30);
+					strcpy(sinComillas, yytext);
+					removerComillas(sinComillas);
+					insertarEnTablaDeSimbolos(sinComillas, "string", yytext, strlen(yytext));
+					yylval.string=strdup(sinComillas);
 					return (CTE_STR); 	
 				}  
 {DIM}				{printf ("\nDetecto DIM ' %s ' en linea %d\n",yytext,yylineno); return (DIM);}
@@ -203,7 +207,6 @@ int validarTamano(char* texto, int tamano){
 int insertarEnTablaDeSimbolos(char* lexema, char* tipo, char* valor, int longitud) {
 	int verificacion = verificarEnTablaDeSimbolos(lexema, tipo);
 	if (verificacion == 2) {
-		printf("-----------------------> %s\t%s\t%s\t%d indice actual %d\n", lexema, tipo, valor, longitud, indiceActualTs);
 		nombreTS[indiceActualTs] = malloc(sizeof(char)*4);
 		tipoTS[indiceActualTs] = malloc(sizeof(char)*4);
 		valorTS[indiceActualTs] = malloc(sizeof(char)*4);
@@ -236,5 +239,17 @@ int verificarEnTablaDeSimbolos(char* lexema, char* tipo) {
 	}
 
 	return 2;
+
+}
+
+
+void removerComillas(char* str) {
+	char *pr = str, *pw = str;
+	while (*pr) {
+		*pw = *pr++;
+		pw += (*pw != '"');
+	}
+
+	*pw = '\0';
 
 }
