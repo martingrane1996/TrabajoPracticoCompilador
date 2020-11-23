@@ -404,6 +404,7 @@ void generarAssembler(int pos){
 	}
 	fprintf(asm1, "include macros2.asm %s\n",polacaVec[0]);
 	fprintf(asm1, "include number.asm\n");
+	fprintf(asm1, "include macros.asm\n");
 	fprintf(asm1, ".MODEL	LARGE \n");
 	fprintf(asm1, ".386\n");
 	fprintf(asm1, ".STACK 200h \n");
@@ -451,6 +452,21 @@ void generarAssembler(int pos){
 			ASMVec[ASMIndex] = polacaVec[i];
 			ASMIndex++;
 			es_operador =1;
+		} else if (strstr(polacaVec[i], "PUT") != NULL) {
+			i++;
+			ASMVec[ASMIndex] = malloc(sizeof(char)*20);
+			char* operando = polacaVec[i];
+				if (esConstante(operando)) {
+					sprintf(ASMVec[ASMIndex], "displayString _%s", operando);
+				} else {
+					sprintf(ASMVec[ASMIndex], "displayString %s", operando);
+			}
+			ASMIndex++;
+		} else if (strstr(polacaVec[i], "GET") != NULL) {
+			i++;
+			ASMVec[ASMIndex] = malloc(sizeof(char)*20);
+			sprintf(ASMVec[ASMIndex], "getString %s", polacaVec[i]);
+			ASMIndex++;
 		} else if(strcmp(polacaVec[i], "BI") == 0 || strcmp(polacaVec[i], "BNE") == 0 || strcmp(polacaVec[i], "BLE") == 0 || strcmp(polacaVec[i], "BGT") == 0 || strcmp(polacaVec[i], "BGE") == 0 || strcmp(polacaVec[i], "BLT") == 0){
 
 			ASMVec[ASMIndex] = malloc(sizeof(char)*10);
