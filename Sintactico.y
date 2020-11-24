@@ -747,3 +747,4 @@ int caracterHexadecimalADecimal(char caracter) {
     return caracter - '0';
   return 10 + (toupper(caracter) - 'A');
 }
+
