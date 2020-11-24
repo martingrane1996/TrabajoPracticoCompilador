@@ -229,7 +229,7 @@ factor:
 	|contar 				{printf("\n\t\tcontar es factor\n");}
 	;
 contar:
-	CONTAR PAR_A{insertarEnTablaDeSimbolos("@contador", "real", "", 0); insertarEnTablaDeSimbolos("_0", "real", "0.0", 3); insertarEnTablaDeSimbolos("_1", "real", "1.0", 3); insertarEnTablaDeSimbolos("@aux_contar", "real", "", 0); polaca("0"); polaca("="); polaca("@contador");}  expresion {polaca("=");polaca("@aux-contar");} CIERRE_SENT CORCH_A el
+	CONTAR PAR_A{insertarEnTablaDeSimbolos("@contador", "real", "", 0); insertarEnTablaDeSimbolos("_0", "real", "0.0", 3); insertarEnTablaDeSimbolos("_1", "real", "1.0", 3); insertarEnTablaDeSimbolos("@aux_contar", "real", "", 0); polaca("0"); polaca("="); polaca("@contador");}  expresion {polaca("=");polaca("@aux_contar");} CIERRE_SENT CORCH_A el
 	CORCH_C PAR_C {polaca("@contador"); printf("\n\t\tfuncion contar\n");} 
 	;
 el:

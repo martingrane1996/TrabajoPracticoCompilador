@@ -20,6 +20,9 @@
 
 	void removerComillas(char* str);
 	char* reemplazarCaracter(char* str, char c, char r);
+	int hexadecimalADecimal(char *cadenaHexadecimal, int longitud);
+	int caracterHexadecimalADecimal(char caracter);
+	int binarioADecimal(char *cadenaBinaria, int longitud);
 %}
 
 %option noyywrap
@@ -97,8 +100,18 @@ WHILE_C 	"while"|"WHILE"|"While"
 						printf ("\nDetecto CTE_BIN demasiado larga\n"); 
 						exit(1);
 					}
+
+
+					char* stringDecimal = malloc(sizeof(char)*30);
+					sprintf(stringDecimal, "%s", yytext+2);
+					
+					int binario = binarioADecimal(stringDecimal, strlen(stringDecimal));
+					char* nueva = malloc(sizeof(char)*30);
+
+					sprintf(nueva, "%d", binario);
+
 					printf ("\nDetecto CTE_BIN ' %s ' en linea %d\n",yytext,yylineno); 
-					insertarEnTablaDeSimbolos(yytext, "bin", yytext, strlen(yytext));
+					insertarEnTablaDeSimbolos(yytext, "bin", nueva, strlen(yytext));
 					yylval.bin=strdup(yytext);
 					return (CTE_BIN);
 				}  
@@ -109,7 +122,15 @@ WHILE_C 	"while"|"WHILE"|"While"
 					}
 
 					printf ("\nDetecto CTE_HEX ' %s ' en linea %d\n",yytext,yylineno);
-					insertarEnTablaDeSimbolos(yytext, "hex", yytext, strlen(yytext));
+
+					char* stringDecimal = malloc(sizeof(char)*30);
+					sprintf(stringDecimal, "%s", yytext+2);
+					
+					int decimal = hexadecimalADecimal(stringDecimal, strlen(stringDecimal));
+					char* nueva = malloc(sizeof(char)*30);
+
+					sprintf(nueva, "%d", decimal);
+					insertarEnTablaDeSimbolos(yytext, "int", nueva, strlen(yytext));
 					yylval.hex=strdup(yytext);
 					return (CTE_HEX);
 				}  
@@ -157,6 +178,7 @@ WHILE_C 	"while"|"WHILE"|"While"
 					char* sinComillas = malloc(sizeof(char) * 30);
 					strcpy(sinComillas, yytext);
 					removerComillas(sinComillas);
+					sinComillas = reemplazarCaracter(sinComillas, ' ', '_');
 					insertarEnTablaDeSimbolos(sinComillas, "string", yytext, strlen(yytext));
 					yylval.string=strdup(sinComillas);
 					return (CTE_STR); 	

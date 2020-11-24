@@ -1,5 +1,5 @@
 PUT
-String1
+String__1
 PUT
 String2
 GET
@@ -35,7 +35,7 @@ actual
 contador
 *
 =
-@aux-contar
+@aux_contar
 256
 @aux_contar
 CMP

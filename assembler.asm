@@ -10,11 +10,11 @@ contador                      	dd             	?
 promedio                      	dd             	?              
 actual                        	dd             	?              
 suma                          	dd             	?              
-_String1                      	db             	"String1"      ,'$', 9 dup (?)
+_String__1                    	db             	"String  1"    ,'$', 11 dup (?)
 _String2                      	db             	"String2"      ,'$', 9 dup (?)
 _0                            	dd             	0.0            
 _02_5                         	dd             	02.5           
-_0xA2B0                       	dd             	0xA2B0         
+_0xA2B0                       	dd             	41648.0        
 _92                           	dd             	92.0           
 _1                            	dd             	1.0            
 _0_342                        	dd             	0.342          
@@ -23,12 +23,12 @@ __0                           	dd             	0.0
 __1                           	dd             	1.0            
 @aux_contar                   	dd             	?              
 _256                          	dd             	256.0          
-_0b10                         	dd             	0b10           
+_0b10                         	dd             	2              
 _52                           	dd             	52.0           
 _4                            	dd             	4.0            
 _String3                      	db             	"String3"      ,'$', 9 dup (?)
 _String4                      	db             	"String4"      ,'$', 9 dup (?)
-_0b111010                     	dd             	0b111010       
+_0b111010                     	dd             	58             
 _String5                      	db             	"String5"      ,'$', 9 dup (?)
 @aux0                         	dd             	?              
 @aux1                         	dd             	?              
@@ -51,7 +51,7 @@ MAIN:
 	 MOV ES,AX 
 	 FNINIT 
 
-displayString _String1
+displayString _String__1
 displayString _String2
 getString actual
 fld __0
@@ -90,7 +90,7 @@ fmul
 fstp @aux3
 ffree
 fld @aux3
-fstp @aux-contar_256
+fstp @aux_contar_256
 fld @aux_contar
 fld _256
 fcomp

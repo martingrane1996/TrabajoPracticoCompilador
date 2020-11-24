@@ -1,5 +1,5 @@
 DIM < contador,promedio,actual,suma> AS < Integer,Float,Float,Float >
-PUT "String1";
+PUT "String  1";
 PUT "String2";
 GET actual;
 contador: 0;
