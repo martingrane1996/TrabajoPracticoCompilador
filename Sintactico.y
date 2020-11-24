@@ -2,6 +2,7 @@
 	#include <stdio.h>
 	#include <stdlib.h>
 	#include <string.h>
+	#include <math.h>
 	#include <ctype.h>
 	#include "y.tab.h"
 	int stopparser=0;
@@ -62,6 +63,11 @@
 	void insertarEtiquetaConIndice(int indice);
 	int insertarEnTablaDeSimbolos(char* lexema, char* tipo, char* valor, int longitud);
 	char* traducirCondicion(char* condicion);
+	// Función binario a decimal
+	int binarioADecimal(char *cadenaBinaria, int longitud);
+	// Función hexadecimal a decimal
+	int hexadecimalADecimal(char *cadenaHexadecimal, int longitud);
+	int caracterHexadecimalADecimal(char caracter);
 %}
 
 %union {
@@ -702,4 +708,42 @@ void insertarEtiquetaConIndice(int indice) {
 	char *aux_str=malloc(sizeof(char)*4); 
 	sprintf(aux_str, "ETIQ_%d", indice);
 	polaca(aux_str);
+}
+
+int binarioADecimal(char *cadenaBinaria, int longitud) {
+  int decimal = 0;
+  int multiplicador = 1;
+  char caracterActual;
+  for (int i = longitud - 1; i >= 0; i--) {
+    caracterActual = cadenaBinaria[i];
+    if (caracterActual == '1') {
+      decimal += multiplicador;
+    }
+    multiplicador = multiplicador * 2;
+  }
+  return decimal;
+}
+
+int hexadecimalADecimal(char *cadenaHexadecimal, int longitud) {
+  int decimal = 0;
+  int potencia = 0;
+  for (int i = longitud - 1; i >= 0; i--) {
+    // Obtener el decimal, por ejemplo para A es 10, para F 15 y para 9 es 9
+    int valorActual = caracterHexadecimalADecimal(cadenaHexadecimal[i]);
+    // Elevar 16 a la potencia que se va incrementando, y multiplicarla por el
+    // valor
+    int elevado = pow(16, potencia) * valorActual;
+ 
+    // Agregar al número
+    decimal += elevado;
+    // Avanzar en la potencia
+    potencia++;
+  }
+  return decimal;
+}
+
+int caracterHexadecimalADecimal(char caracter) {
+  if (isdigit(caracter))
+    return caracter - '0';
+  return 10 + (toupper(caracter) - 'A');
 }
