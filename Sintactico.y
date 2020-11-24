@@ -426,7 +426,7 @@ char* traducirCondicion(char* condicion) {
 void generarAssembler(int pos){
 	int i,es_operador=0 ;
 	FILE *asm1;
-	asm1 = fopen("assembler.asm", "w");
+	asm1 = fopen("Final.asm", "w");
 	if(asm1  == NULL){
 		printf("Error al generar el asembler \n");
 		exit(1);
