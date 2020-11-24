@@ -643,7 +643,7 @@ void generarAssembler(int pos){
 		fprintf(asm1, "%s\n", ASMVec[a]);
 	}
 
-	fprintf(asm1, "\n\t mov AX, 4C00h \t ; Genera la interrupcion 21h %s\n","HOLAAA");
+	fprintf(asm1, "\n\t mov AX, 4C00h \t ; Genera la interrupcion 21h %s\n");
 	fprintf(asm1, "\t int 21h \t ; Genera la interrupcion 21h\n");
 	fprintf(asm1, "END MAIN\n");
 	fclose(asm1);
