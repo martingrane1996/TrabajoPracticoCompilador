@@ -481,7 +481,7 @@ void generarAssembler(int pos){
 			es_operador =1;
 		} else if (strstr(polacaVec[i], "PUT") != NULL) {
 			i++;
-			ASMVec[ASMIndex] = malloc(sizeof(char)*20);
+			ASMVec[ASMIndex] = malloc(sizeof(char)*50);
 			char* operando = polacaVec[i];
 				if (esConstante(operando)) {
 					sprintf(ASMVec[ASMIndex], "displayString _%s", operando);
@@ -491,7 +491,7 @@ void generarAssembler(int pos){
 			ASMIndex++;
 		} else if (strstr(polacaVec[i], "GET") != NULL) {
 			i++;
-			ASMVec[ASMIndex] = malloc(sizeof(char)*20);
+			ASMVec[ASMIndex] = malloc(sizeof(char)*50);
 			sprintf(ASMVec[ASMIndex], "getString %s", polacaVec[i]);
 			ASMIndex++;
 		} else if(strcmp(polacaVec[i], "BI") == 0 || strcmp(polacaVec[i], "BNE") == 0 || strcmp(polacaVec[i], "BLE") == 0 || strcmp(polacaVec[i], "BGT") == 0 || strcmp(polacaVec[i], "BGE") == 0 || strcmp(polacaVec[i], "BLT") == 0){
